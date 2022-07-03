@@ -1,0 +1,63 @@
+@font-face {
+    font-family: 'RobotoBlack';
+    src: url('fonts/roboto-black-webfont.woff2') format('woff2'),
+         url('fonts/roboto-black-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#app-container {
+    display: flex;
+    height: 100%;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+#canvas {
+    margin: 10px;
+    flex-grow: 6;
+}
+
+.button-container {
+    flex-grow: 1;
+    margin: 10px;
+    font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.button-entry {
+    background-color: #e494ae;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin: 11px 11px;
+    padding: 10px 30px;
+    position: relative;
+    border: 1px solid #0000;
+    border-radius: 5px;
+    color: #0f4844;
+    outline: none;
+    font-family: 'RobotoBlack', sans-serif;
+    transition: 0.4s;
+    font-size: inherit;
+}
+
+.button-entry:hover {
+    background-color: #FFF;
+    border: 1px solid #000;
+    color: #58162c;
+    transition: 0.1s;
+}
+
+.button-entry:active {
+    background-color: #70dbb8;
+}
