@@ -1,4 +1,4 @@
-import DecQueue from "/DecQueue.js";
+import DecQueue from "./DecQueue.js";
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
