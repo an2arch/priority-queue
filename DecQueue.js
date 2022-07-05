@@ -10,7 +10,8 @@ class DecQueue {
     }
   }
 
-  #SiftDown(idx) {
+  #SiftDown(idx, trace) {
+    if (trace) trace(this.#buffer);
     while (2 * idx + 1 < this.#buffer.length) {
       let left = 2 * idx + 1;
       let right = 2 * idx + 2;
@@ -29,10 +30,12 @@ class DecQueue {
         this.#buffer[largest],
       ];
       idx = largest;
+      if (trace) trace(this.#buffer);
     }
   }
 
-  #SiftUp(idx) {
+  #SiftUp(idx, trace) {
+    if (trace) trace(this.#buffer);
     while (idx > 0) {
       let parent = Math.floor((idx - 1) / 2);
       if (this.#buffer[parent] >= this.#buffer[idx]) {
@@ -43,15 +46,17 @@ class DecQueue {
         this.#buffer[parent],
       ];
       idx = parent;
+      if (trace) trace(this.#buffer);
     }
   }
 
-  Enqueue(item) {
+  Enqueue(item, trace) {
+    if (trace) trace(this.#buffer);
     this.#buffer.push(item);
-    this.#SiftUp(this.#buffer.length - 1);
+    this.#SiftUp(this.#buffer.length - 1, trace);
   }
 
-  Dequeue() {
+  Dequeue(trace) {
     console.assert(this.#buffer.length > 0);
     let result = this.#buffer[0];
     this.#buffer[0] = this.#buffer.pop();
@@ -66,5 +71,9 @@ class DecQueue {
   Peek() {
     console.assert(this.#buffer.length > 0);
     return this.#buffer[0];
+  }
+
+  GetBuffer() {
+    return this.#buffer;
   }
 }
