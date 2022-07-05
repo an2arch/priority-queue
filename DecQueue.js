@@ -34,7 +34,7 @@ class DecQueue {
 
   #SiftUp(idx) {
     while (idx > 0) {
-      let parent = (idx - 1) % 2;
+      let parent = Math.floor((idx - 1) / 2);
       if (this.#buffer[parent] >= this.#buffer[idx]) {
         return;
       }
@@ -56,8 +56,8 @@ class DecQueue {
     let result = this.#buffer[0];
     this.#buffer[0] = this.#buffer.pop();
 
-    if (this.#buffer.values()) {
-      this.#SiftDown(0);
+    if (this.#buffer.length > 0) {
+      this.#SiftDown(0, trace);
     }
 
     return result;
