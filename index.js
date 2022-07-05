@@ -7,7 +7,7 @@ const ctx = canvas.getContext("2d");
 const addButton = document.getElementById("add-button");
 const popButton = document.getElementById("pop-button");
 
-const ITEM_SPACING = 40;
+const ITEM_SPACING_X = 40;
 const ITEM_BOX_PADDING = 10;
 const queue = new DecQueue();
 
@@ -17,26 +17,66 @@ function initContext(context) {
   context.textBaseline = "middle";
 }
 
-function drawItem(context, x, y, item) {
-  context.strokeStyle = "#FF3030";
-  context.lineWidth = 2;
-  let metrics = context.measureText(item);
+function drawLine(ctx, pointFrom, pointTo, color) {
+  if (color) {
+    ctx.strokeStyle = color;
+  }
+  ctx.beginPath();
+  ctx.moveTo(...pointFrom);
+  ctx.lineTo(...pointTo);
+  ctx.stroke();
+}
+
+function drawItem(ctx, point, item, rectColor, textColor) {
+  let metrics = ctx.measureText(item);
   let textHeight = 18;
 
-  context.strokeRect(
-    x - metrics.width / 2 - ITEM_BOX_PADDING,
-    y - textHeight - ITEM_BOX_PADDING,
+  let cx = point[0] - metrics.width / 2;
+  let cy = point[1] - textHeight / 2;
+
+  ctx.fillStyle = rectColor;
+  ctx.fillRect(
+    cx - ITEM_BOX_PADDING,
+    cy - ITEM_BOX_PADDING,
     metrics.width + 2 * ITEM_BOX_PADDING,
     textHeight + 2 * ITEM_BOX_PADDING
   );
 
-  context.fillText(item, x - metrics.width / 2, y - textHeight / 2);
+  ctx.fillStyle = textColor;
+  ctx.fillText(item, cx, cy + textHeight / 2);
+}
+
+function drawItems(ctx, items) {
+  let xs = [];
+  let ys = [];
+  let levelCount = Math.floor(Math.log2(items.length));
+  for (let i = 0; i < items.length; ++i) {
+    let levelCurrent = Math.floor(Math.log2(i + 1));
+    ys.push(canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50);
+    if (i == 0) {
+      xs.push(canvas.width / 2);
+    } else {
+      let countChildren = Math.pow(2, levelCount - levelCurrent);
+      xs.push(
+        xs[Math.ceil(i / 2) - 1] -
+          Math.pow(-1, (i + 1) % 2) * ITEM_SPACING_X * countChildren
+      );
+    }
+  }
+
+  for (let i = 0; i < items.length; ++i) {
+    let parrent = Math.floor((i - 1) / 2);
+    drawLine(ctx, [xs[i], ys[i]], [xs[parrent], ys[parrent]], "#0f4844");
+  }
+  for (let i = 0; i < items.length; ++i) {
+    drawItem(ctx, [xs[i], ys[i]], items[i], "#e494ae", "#0f4844");
+  }
 }
 
 initContext(ctx);
 
 let trace = [];
-addButton.onclick = (e) => {
+addButton.onclick = () => {
   const item = parseInt(prompt("Add Item"));
   if (!isNaN(item)) {
     trace = [];
@@ -50,23 +90,7 @@ addButton.onclick = (e) => {
 function loop(time) {
   for (let state of trace) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let xs = [];
-    for (let i = 0; i < state.length; ++i) {
-      let level = Math.floor(Math.log2(i + 1));
-      if (i == 0) {
-        xs.push(canvas.width / 2);
-      } else {
-        let countChildren = Math.pow(
-          2,
-          Math.floor(Math.log2(state.length)) - level
-        );
-        xs.push(
-          xs[Math.ceil(i / 2) - 1] -
-            Math.pow(-1, (i + 1) % 2) * ITEM_SPACING * countChildren
-        );
-      }
-      drawItem(ctx, xs[i], level * 50 + 100, state[i]);
-    }
+    drawItems(ctx, state);
   }
   window.requestAnimationFrame(loop);
 }
