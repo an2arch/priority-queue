@@ -4,7 +4,7 @@ class DecQueue {
   constructor(list) {
     if (list) {
       this.#buffer = list;
-      for (let i = (this.buffer.length % 2) - 1; i >= 0; --i) {
+      for (let i = Math.floor(this.#buffer.length / 2) - 1; i >= 0; --i) {
         this.#SiftDown(i);
       }
     }
