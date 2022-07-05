@@ -1,4 +1,4 @@
-export default class DecQueue {
+class DecQueue {
   #buffer = [];
 
   constructor(list) {
