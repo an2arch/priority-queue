@@ -80,6 +80,14 @@ let scale = 1;
 
 let trace = [];
 addButton.onclick = () => {
+    if (!textBox.value) {
+        textBox.style.borderColor = "#FF3030";
+        textBox.style.borderWidth = "2px";
+        return;
+    }
+    textBox.style.borderColor = "#000";
+    textBox.style.borderWidth = "1px";
+
     const item = parseFloat(textBox.value);
     if (!isNaN(item)) {
         textBox.value = "";
