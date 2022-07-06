@@ -78,7 +78,7 @@ initContext(ctx);
 
 let trace = [];
 addButton.onclick = () => {
-    const item = parseInt(textBox.value);
+    const item = parseFloat(textBox.value);
     if (!isNaN(item)) {
         textBox.value = "";
         trace = [];
