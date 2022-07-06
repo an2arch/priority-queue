@@ -91,15 +91,35 @@ addButton.onclick = () => {
     }
 };
 
+textBox.onkeydown = (e) => {
+    const ENTER = 13;
+    if (e.keyCode == ENTER) addButton.onclick();
+};
+
+function getPoint(canvas, event) {
+    var rect = canvas.getBoundingClientRect(), // abs. size of element
+        scaleX = canvas.width / rect.width, // relationship bitmap vs. element for x
+        scaleY = canvas.height / rect.height; // relationship bitmap vs. element for y
+
+    return {
+        x: (event.clientX - rect.left) * scaleX, // scale mouse coordinates after they have
+        y: (event.clientY - rect.top) * scaleY, // been adjusted to be relative to element
+    };
+}
+
 canvas.onwheel = (e) => {
     let deltaScale = 1 - e.deltaY * 0.001;
     let canvasRect = canvas.getBoundingClientRect();
-    let originX = parseInt(e.clientX) - canvasRect.left;
-    let originY = parseInt(e.clientY) - canvasRect.top;
-    currMatrix.scaleSelf(deltaScale, deltaScale, 1, originX, originY);
+
+    let pos = getPoint(canvas, e);
+    let imatrix = currMatrix.inverse();
+    pos.x = pos.x * imatrix.a + pos.y * imatrix.c + imatrix.e;
+    pos.y = pos.x * imatrix.b + pos.y * imatrix.d + imatrix.f;
+
+    currMatrix.scaleSelf(deltaScale, deltaScale, 1, pos.x, pos.y);
     scale = Math.sqrt(currMatrix.a * currMatrix.a + currMatrix.b * currMatrix.b);
     if (scale < 0.125 || scale > 4) {
-        currMatrix.scaleSelf(1 / deltaScale, 1 / deltaScale, 1, originX, originY);
+        currMatrix.scaleSelf(1 / deltaScale, 1 / deltaScale, 1, pos.x, pos.y);
         scale = Math.sqrt(currMatrix.a * currMatrix.a + currMatrix.b * currMatrix.b);
     }
 };
@@ -118,11 +138,6 @@ canvas.onmousedown = (e) => {
         canvas.onmousemove = null;
         canvas.onmouseup = null;
     };
-};
-
-textBox.onkeydown = (e) => {
-    const ENTER = 13;
-    if (e.keyCode == ENTER) addButton.onclick();
 };
 
 function loop(time) {
