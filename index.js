@@ -6,12 +6,10 @@ const ctx = canvas.getContext("2d");
 
 const addButton = document.getElementById("add-button");
 const popButton = document.getElementById("pop-button");
-const textBox = document.getElementById("text-box");
 
 const ITEM_SPACING_X = 40;
 const ITEM_BOX_PADDING = 10;
 const queue = new DecQueue();
-
 
 function initContext(context) {
   context.font = "18px RobotoBlack";
@@ -79,7 +77,7 @@ initContext(ctx);
 
 let trace = [];
 addButton.onclick = () => {
-  const item = parseInt(textBox.value);
+  const item = parseInt(prompt("Add Item"));
   if (!isNaN(item)) {
     trace = [];
     queue.Enqueue(item, (s) => {
@@ -97,8 +95,4 @@ function loop(time) {
   window.requestAnimationFrame(loop);
 }
 
-window.onresize = () => {
-    canvas.width = (document.documentElement.clientWidth * 4) / 5;
-    canvas.height = document.documentElement.clientHeight - 20;
-}
 window.requestAnimationFrame(loop);
