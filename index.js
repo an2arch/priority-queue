@@ -51,9 +51,9 @@ function drawItem(ctx, point, item, rectColor, textColor) {
 }
 
 function drawItems(ctx, items) {
+    let levelCount = Math.floor(Math.log2(items.length));
     let xs = [];
     let ys = [];
-    let levelCount = Math.floor(Math.log2(items.length));
     for (let i = 0; i < items.length; ++i) {
         let levelCurrent = Math.floor(Math.log2(i + 1));
         ys.push(canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50);
@@ -75,6 +75,8 @@ function drawItems(ctx, items) {
 }
 
 initContext(ctx);
+let currMatrix = ctx.getTransform();
+let scale = 1;
 
 let trace = [];
 addButton.onclick = () => {
@@ -89,6 +91,35 @@ addButton.onclick = () => {
     }
 };
 
+canvas.onwheel = (e) => {
+    let deltaScale = 1 - e.deltaY * 0.001;
+    let canvasRect = canvas.getBoundingClientRect();
+    let originX = parseInt(e.clientX) - canvasRect.left;
+    let originY = parseInt(e.clientY) - canvasRect.top;
+    currMatrix.scaleSelf(deltaScale, deltaScale, 1, originX, originY);
+    scale = Math.sqrt(currMatrix.a * currMatrix.a + currMatrix.b * currMatrix.b);
+    if (scale < 0.125 || scale > 4) {
+        currMatrix.scaleSelf(1 / deltaScale, 1 / deltaScale, 1, originX, originY);
+        scale = Math.sqrt(currMatrix.a * currMatrix.a + currMatrix.b * currMatrix.b);
+    }
+};
+
+canvas.onmousedown = (e) => {
+    e.preventDefault();
+
+    canvas.onmousemove = (e) => {
+        e.preventDefault();
+        let offsetX = parseInt(e.movementX);
+        let offsetY = parseInt(e.movementY);
+        currMatrix.translateSelf(offsetX / scale, offsetY / scale);
+    };
+
+    canvas.onmouseup = () => {
+        canvas.onmousemove = null;
+        canvas.onmouseup = null;
+    };
+};
+
 textBox.onkeydown = (e) => {
     const ENTER = 13;
     if (e.keyCode == ENTER) addButton.onclick();
@@ -97,14 +128,17 @@ textBox.onkeydown = (e) => {
 function loop(time) {
     for (let i = 0; i < trace.length; ++i) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.setTransform(currMatrix);
         drawItems(ctx, trace[i]);
+        ctx.restore();
     }
     window.requestAnimationFrame(loop);
 }
 
 window.onresize = () => {
     canvas.width = (document.documentElement.clientWidth * 3) / 4;
-    canvas.height = canvas.height = document.documentElement.clientHeight - 20;
+    canvas.height = document.documentElement.clientHeight - 20;
     container.width = document.documentElement.clientWidth / 4;
     initContext(ctx);
     window.requestAnimationFrame(loop);
