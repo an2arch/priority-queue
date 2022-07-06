@@ -5,12 +5,6 @@ canvas.height = canvas.height = document.documentElement.clientHeight - 20;
 const container = document.getElementById("container");
 container.width = document.documentElement.clientWidth / 4;
 
-window.onresize = () => {
-    canvas.width = (document.documentElement.clientWidth * 3) / 4;
-    canvas.height = canvas.height = document.documentElement.clientHeight - 20;
-    container.width = document.documentElement.clientWidth / 4;
-};
-
 const ctx = canvas.getContext("2d");
 
 const textBox = document.getElementById("text-box");
@@ -107,5 +101,13 @@ function loop(time) {
     }
     window.requestAnimationFrame(loop);
 }
+
+window.onresize = () => {
+    canvas.width = (document.documentElement.clientWidth * 3) / 4;
+    canvas.height = canvas.height = document.documentElement.clientHeight - 20;
+    container.width = document.documentElement.clientWidth / 4;
+    initContext(ctx);
+    window.requestAnimationFrame(loop);
+};
 
 window.requestAnimationFrame(loop);
