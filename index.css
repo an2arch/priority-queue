@@ -47,8 +47,17 @@ html, body {
         -ms-flex-pack: center;
             justify-content: center;
     margin: 10px;
-
     font-size: 20px;
+}
+
+.text-box {
+    margin: 10px;
+    padding: 10px 30px;
+    border-radius: 10px;
+    color: #0f4844;
+    text-decoration: none;
+    font-family: 'RobotoBlack', sans-serif;
+    font-size: 18px;
 }
 
 .button-entry {
