@@ -1,30 +1,56 @@
 /// <reference path="DecQueue.ts" />
 
-// TODO: this is a state variables
 type HexColor = `#${string}`;
 type Point = { x: number; y: number };
+
+// TODO: this is a state variables
 const ITEM_SPACING_X: number = 40;
 const ITEM_BOX_PADDING: number = 10;
+const RESET_WIDTH = 100;
+const RESET_HEIGTH = 30;
+const RESET_POS: Point = { x: 0, y: 0 };
 const queue: DecQueue = new DecQueue();
+let currMatrix: DOMMatrix = new DOMMatrix();
+let scale: number = 1;
+let trace: number[][] = [];
 
 const canvas: HTMLCanvasElement = document.getElementById("canvas") as HTMLCanvasElement;
 const container: HTMLDivElement = document.getElementById("container") as HTMLDivElement;
-
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-
 const textBox = document.getElementById("text-box") as HTMLInputElement;
 const addButton = document.getElementById("add-button") as HTMLDivElement;
 const popButton = document.getElementById("pop-button") as HTMLDivElement;
+
+function initContext(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "18px RobotoBlack";
+    ctx.textBaseline = "middle";
+}
 
 function updateSizes(canvas: HTMLCanvasElement, container: HTMLDivElement, maxWidth: number, maxHeight: number) {
     canvas.width = (maxWidth * 3) / 4;
     canvas.height = maxHeight - 20;
     container.style.width = String(maxWidth / 4);
+    RESET_POS.x = canvas.width;
 }
 
-function initContext(ctx: CanvasRenderingContext2D): void {
-    ctx.font = "18px RobotoBlack";
-    ctx.textBaseline = "middle";
+function getPoint(canvas: HTMLCanvasElement, point: Point): Point {
+    let rect: DOMRect = canvas.getBoundingClientRect(); // abs. size of element
+    let scaleX: number = canvas.width / rect.width; // relationship bitmap vs. element for x
+    let scaleY: number = canvas.height / rect.height; // relationship bitmap vs. element for y
+
+    return {
+        x: Math.max(0, (point.x - rect.left) * scaleX),
+        y: Math.max(0, (point.y - rect.top) * scaleY),
+    };
+}
+
+function rectContainPoint(rectPos: Point, rectWidth: number, rectHeight: number, point: Point): boolean {
+    return (
+        point.x >= rectPos.x &&
+        point.x <= rectPos.x + rectWidth &&
+        point.y >= rectPos.y &&
+        point.y <= rectPos.y + rectHeight
+    );
 }
 
 function drawLine(ctx: CanvasRenderingContext2D, pointFrom: Point, pointTo: Point, color: HexColor): void {
@@ -88,6 +114,18 @@ function drawItems(ctx: CanvasRenderingContext2D, items: number[]) {
     }
 }
 
+function drawResetButton(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = "#FFF";
+    ctx.fillRect(RESET_POS.x, RESET_POS.y, RESET_WIDTH, RESET_HEIGTH);
+    ctx.strokeRect(RESET_POS.x, RESET_POS.y, RESET_WIDTH, RESET_HEIGTH);
+
+    let text: string = "Reset view";
+    let textWidth: number = ctx.measureText(text).width;
+    ctx.fillStyle = "#0f4844";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, RESET_POS.x + (RESET_WIDTH - textWidth) / 2, RESET_HEIGTH / 2);
+}
+
 function handleAddItem(textBox: HTMLInputElement): void {
     if (!textBox.value) {
         textBox.style.borderColor = "#FF3030";
@@ -114,7 +152,7 @@ function handlePopItem(): void {
         trace.push([...s]);
     });
 
-    console.log(result);
+    console.log("Pop item: ", result);
     if (result === null) {
         alert("There are no items in a queue");
         return;
@@ -122,11 +160,6 @@ function handlePopItem(): void {
 
     console.log(trace);
 }
-
-// TODO: this also may be state variables
-let currMatrix: DOMMatrix = ctx.getTransform();
-let scale: number = 1;
-let trace: number[][] = [];
 
 addButton.onclick = () => {
     handleAddItem(textBox);
@@ -137,17 +170,6 @@ popButton.onclick = handlePopItem;
 textBox.onkeydown = (e) => {
     if (e.key === "Enter") handleAddItem(textBox);
 };
-
-function getPoint(canvas: HTMLCanvasElement, event: MouseEvent): Point {
-    let rect: DOMRect = canvas.getBoundingClientRect(); // abs. size of element
-    let scaleX: number = canvas.width / rect.width; // relationship bitmap vs. element for x
-    let scaleY: number = canvas.height / rect.height; // relationship bitmap vs. element for y
-
-    return {
-        x: (event.clientX - rect.left) * scaleX, // scale mouse coordinates after they have
-        y: (event.clientY - rect.top) * scaleY, // been adjusted to be relative to element
-    };
-}
 
 canvas.onwheel = (e: WheelEvent) => {
     let deltaScale = 1 - e.deltaY * 0.001;
@@ -166,7 +188,22 @@ canvas.onwheel = (e: WheelEvent) => {
     }
 };
 
-canvas.onmousedown = () => {
+canvas.onmousemove = (e: MouseEvent) => {
+    if (rectContainPoint(RESET_POS, RESET_WIDTH, RESET_HEIGTH, getPoint(canvas, { x: e.clientX, y: e.clientY }))) {
+        canvas.style.cursor = "pointer";
+    } else {
+        canvas.style.cursor = "move";
+    }
+};
+
+let savedOnMouseMove = canvas.onmousemove;
+
+canvas.onmousedown = (e: MouseEvent) => {
+    if (rectContainPoint(RESET_POS, RESET_WIDTH, RESET_HEIGTH, getPoint(canvas, { x: e.clientX, y: e.clientY }))) {
+        scale = 1;
+        currMatrix = new DOMMatrix();
+    }
+
     canvas.onmousemove = (e: MouseEvent) => {
         let offsetX: number = e.movementX;
         let offsetY: number = e.movementY;
@@ -174,18 +211,26 @@ canvas.onmousedown = () => {
     };
 
     canvas.onmouseup = () => {
-        canvas.onmousemove = null;
+        canvas.onmousemove = savedOnMouseMove;
         canvas.onmouseup = null;
     };
 };
 
+canvas.onmouseup = () => {
+    canvas.onmousemove = savedOnMouseMove;
+    canvas.onmouseup = null;
+};
+
 function loop(time: DOMHighResTimeStamp): void {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawResetButton(ctx);
     for (let i = 0; i < trace.length; ++i) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.setTransform(currMatrix);
         drawItems(ctx, trace[i]);
         ctx.restore();
+        drawResetButton(ctx);
     }
     window.requestAnimationFrame(loop);
 }

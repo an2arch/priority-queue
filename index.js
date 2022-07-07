@@ -78,23 +78,46 @@ class DecQueue {
     }
 }
 /// <reference path="DecQueue.ts" />
+// TODO: this is a state variables
 const ITEM_SPACING_X = 40;
 const ITEM_BOX_PADDING = 10;
+const RESET_WIDTH = 100;
+const RESET_HEIGTH = 30;
+const RESET_POS = { x: 0, y: 0 };
 const queue = new DecQueue();
+let currMatrix = new DOMMatrix();
+let scale = 1;
+let trace = [];
 const canvas = document.getElementById("canvas");
 const container = document.getElementById("container");
 const ctx = canvas.getContext("2d");
 const textBox = document.getElementById("text-box");
 const addButton = document.getElementById("add-button");
 const popButton = document.getElementById("pop-button");
+function initContext(ctx) {
+    ctx.font = "18px RobotoBlack";
+    ctx.textBaseline = "middle";
+}
 function updateSizes(canvas, container, maxWidth, maxHeight) {
     canvas.width = (maxWidth * 3) / 4;
     canvas.height = maxHeight - 20;
     container.style.width = String(maxWidth / 4);
+    RESET_POS.x = canvas.width;
 }
-function initContext(ctx) {
-    ctx.font = "18px RobotoBlack";
-    ctx.textBaseline = "middle";
+function getPoint(canvas, point) {
+    let rect = canvas.getBoundingClientRect(); // abs. size of element
+    let scaleX = canvas.width / rect.width; // relationship bitmap vs. element for x
+    let scaleY = canvas.height / rect.height; // relationship bitmap vs. element for y
+    return {
+        x: Math.max(0, (point.x - rect.left) * scaleX),
+        y: Math.max(0, (point.y - rect.top) * scaleY),
+    };
+}
+function rectContainPoint(rectPos, rectWidth, rectHeight, point) {
+    return (point.x >= rectPos.x &&
+        point.x <= rectPos.x + rectWidth &&
+        point.y >= rectPos.y &&
+        point.y <= rectPos.y + rectHeight);
 }
 function drawLine(ctx, pointFrom, pointTo, color) {
     if (color) {
@@ -139,6 +162,16 @@ function drawItems(ctx, items) {
         drawItem(ctx, { x: xs[i], y: ys[i] }, items[i], "#e494ae", "#0f4844");
     }
 }
+function drawResetButton(ctx) {
+    ctx.fillStyle = "#FFF";
+    ctx.fillRect(RESET_POS.x, RESET_POS.y, RESET_WIDTH, RESET_HEIGTH);
+    ctx.strokeRect(RESET_POS.x, RESET_POS.y, RESET_WIDTH, RESET_HEIGTH);
+    let text = "Reset view";
+    let textWidth = ctx.measureText(text).width;
+    ctx.fillStyle = "#0f4844";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, RESET_POS.x + (RESET_WIDTH - textWidth) / 2, RESET_HEIGTH / 2);
+}
 function handleAddItem(textBox) {
     if (!textBox.value) {
         textBox.style.borderColor = "#FF3030";
@@ -162,17 +195,13 @@ function handlePopItem() {
     let result = queue.Dequeue((s) => {
         trace.push([...s]);
     });
-    console.log(result);
+    console.log("Pop item: ", result);
     if (result === null) {
         alert("There are no items in a queue");
         return;
     }
     console.log(trace);
 }
-// TODO: this also may be state variables
-let currMatrix = ctx.getTransform();
-let scale = 1;
-let trace = [];
 addButton.onclick = () => {
     handleAddItem(textBox);
 };
@@ -181,15 +210,6 @@ textBox.onkeydown = (e) => {
     if (e.key === "Enter")
         handleAddItem(textBox);
 };
-function getPoint(canvas, event) {
-    let rect = canvas.getBoundingClientRect(); // abs. size of element
-    let scaleX = canvas.width / rect.width; // relationship bitmap vs. element for x
-    let scaleY = canvas.height / rect.height; // relationship bitmap vs. element for y
-    return {
-        x: (event.clientX - rect.left) * scaleX,
-        y: (event.clientY - rect.top) * scaleY, // been adjusted to be relative to element
-    };
-}
 canvas.onwheel = (e) => {
     let deltaScale = 1 - e.deltaY * 0.001;
     // let canvasRect = canvas.getBoundingClientRect();
@@ -204,24 +224,44 @@ canvas.onwheel = (e) => {
         scale = Math.sqrt(currMatrix.a * currMatrix.a + currMatrix.b * currMatrix.b);
     }
 };
-canvas.onmousedown = () => {
+canvas.onmousemove = (e) => {
+    if (rectContainPoint(RESET_POS, RESET_WIDTH, RESET_HEIGTH, getPoint(canvas, { x: e.clientX, y: e.clientY }))) {
+        canvas.style.cursor = "pointer";
+    }
+    else {
+        canvas.style.cursor = "move";
+    }
+};
+let savedOnMouseMove = canvas.onmousemove;
+canvas.onmousedown = (e) => {
+    if (rectContainPoint(RESET_POS, RESET_WIDTH, RESET_HEIGTH, getPoint(canvas, { x: e.clientX, y: e.clientY }))) {
+        scale = 1;
+        currMatrix = new DOMMatrix();
+    }
     canvas.onmousemove = (e) => {
         let offsetX = e.movementX;
         let offsetY = e.movementY;
         currMatrix.translateSelf(offsetX / scale, offsetY / scale);
     };
     canvas.onmouseup = () => {
-        canvas.onmousemove = null;
+        canvas.onmousemove = savedOnMouseMove;
         canvas.onmouseup = null;
     };
 };
+canvas.onmouseup = () => {
+    canvas.onmousemove = savedOnMouseMove;
+    canvas.onmouseup = null;
+};
 function loop(time) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawResetButton(ctx);
     for (let i = 0; i < trace.length; ++i) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.setTransform(currMatrix);
         drawItems(ctx, trace[i]);
         ctx.restore();
+        drawResetButton(ctx);
     }
     window.requestAnimationFrame(loop);
 }
