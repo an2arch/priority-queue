@@ -50,12 +50,14 @@ class DecQueue {
     Dequeue(trace) {
         console.assert(this.#buffer.length > 0);
         let result = this.#buffer[0];
-        this.#buffer[0] = this.#buffer.pop();
-
+        if (this.#buffer.length > 1) this.#buffer[0] = this.#buffer.pop();
+        else {
+            this.#buffer.pop();
+            return result;
+        }
         if (this.#buffer.length > 0) {
             this.#SiftDown(0, trace);
         }
-
         return result;
     }
 

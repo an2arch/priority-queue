@@ -99,6 +99,14 @@ addButton.onclick = () => {
     }
 };
 
+popButton.onclick = () => {
+    trace = [];
+    queue.Dequeue((s) => {
+        trace.push([...s]);
+    });
+    console.log(trace);
+}
+
 textBox.onkeydown = (e) => {
     const ENTER = 13;
     if (e.keyCode == ENTER) addButton.onclick();
