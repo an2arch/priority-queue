@@ -102,7 +102,7 @@ function updateSizes(canvas, container, maxWidth, maxHeight) {
     canvas.width = (maxWidth * 3) / 4;
     canvas.height = maxHeight - 20;
     container.style.width = String(maxWidth / 4);
-    RESET_POS.x = canvas.width;
+    RESET_POS.x = canvas.width - RESET_WIDTH;
 }
 function getPoint(canvas, point) {
     let rect = canvas.getBoundingClientRect(); // abs. size of element
