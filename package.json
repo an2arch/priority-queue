@@ -1,0 +1,23 @@
+{
+    "name": "priority-queue",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc",
+        "watch": "tsc --watch"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/an2arch/priority-queue.git"
+    },
+    "author": "",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/an2arch/priority-queue/issues"
+    },
+    "homepage": "https://github.com/an2arch/priority-queue#readme",
+    "devDependencies": {
+        "typescript": "^4.7.4"
+    }
+}
