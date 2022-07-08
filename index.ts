@@ -91,26 +91,27 @@ function drawItem(
 function drawItems(ctx: CanvasRenderingContext2D, items: number[]) {
     // TODO: this may be state variables
     let levelCount = Math.floor(Math.log2(items.length));
-    let xs: number[] = [];
-    let ys: number[] = [];
+    let positions: Point[] = [];
 
     for (let i = 0; i < items.length; ++i) {
         let levelCurrent = Math.floor(Math.log2(i + 1));
-        ys.push(canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50);
-        if (i == 0) {
-            xs.push(canvas.width / 2);
-        } else {
-            let countChildren = Math.pow(2, levelCount - levelCurrent);
-            xs.push(xs[Math.ceil(i / 2) - 1] - Math.pow(-1, (i + 1) % 2) * ITEM_SPACING_X * countChildren);
-        }
+        let countChildren = Math.pow(2, levelCount - levelCurrent);
+        let y = canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50;
+        let x =
+            i !== 0
+                ? positions[Math.ceil(i / 2) - 1].x - Math.pow(-1, (i + 1) % 2) * ITEM_SPACING_X * countChildren
+                : ctx.canvas.width / 2;
+        positions[i] = { x, y };
     }
 
     for (let i = 0; i < items.length; ++i) {
         let parrent = Math.floor((i - 1) / 2);
-        drawLine(ctx, { x: xs[i], y: ys[i] }, { x: xs[parrent], y: ys[parrent] }, "#0f4844");
+        if (parrent >= 0) {
+            drawLine(ctx, positions[i], positions[parrent], "#0f4844");
+        }
     }
     for (let i = 0; i < items.length; ++i) {
-        drawItem(ctx, { x: xs[i], y: ys[i] }, items[i], "#e494ae", "#0f4844");
+        drawItem(ctx, positions[i], items[i], "#e494ae", "#0f4844");
     }
 }
 
@@ -173,7 +174,6 @@ textBox.onkeydown = (e) => {
 
 canvas.onwheel = (e: WheelEvent) => {
     let deltaScale = 1 - e.deltaY * 0.001;
-    // let canvasRect = canvas.getBoundingClientRect();
 
     let pos: Point = getPoint(canvas, e);
     let imatrix: DOMMatrix = currMatrix.inverse();
@@ -235,14 +235,22 @@ function loop(time: DOMHighResTimeStamp): void {
     window.requestAnimationFrame(loop);
 }
 
-window.onload = () => {
-    updateSizes(canvas, container, document.documentElement.clientWidth, document.documentElement.clientHeight);
-    initContext(ctx);
-    window.requestAnimationFrame(loop);
-};
+window.addEventListener(
+    "load",
+    () => {
+        updateSizes(canvas, container, document.documentElement.clientWidth, document.documentElement.clientHeight);
+        initContext(ctx);
+        window.requestAnimationFrame(loop);
+    },
+    false
+);
 
-window.onresize = () => {
-    updateSizes(canvas, container, document.documentElement.clientWidth, document.documentElement.clientHeight);
-    initContext(ctx);
-    window.requestAnimationFrame(loop);
-};
+window.addEventListener(
+    "resize",
+    () => {
+        updateSizes(canvas, container, document.documentElement.clientWidth, document.documentElement.clientHeight);
+        initContext(ctx);
+        window.requestAnimationFrame(loop);
+    },
+    false
+);
