@@ -78,7 +78,7 @@ class DecQueue {
     }
 }
 /// <reference path="DecQueue.ts" />
-// TODO: this is a state variables
+// TODO: state variables
 const ITEM_SPACING_X = 40;
 const ITEM_BOX_PADDING = 10;
 const RESET_WIDTH = 100;
@@ -97,6 +97,7 @@ const popButton = document.getElementById("pop-button");
 function initContext(ctx) {
     ctx.font = "18px RobotoBlack";
     ctx.textBaseline = "middle";
+    ctx.resetTransform();
 }
 function updateSizes(canvas, container, maxWidth, maxHeight) {
     canvas.width = (maxWidth * 3) / 4;
@@ -201,6 +202,16 @@ function handlePopItem() {
     }
     console.log(trace);
 }
+function handleScale(scaleMult, zoom, origin) {
+    scaleMult = zoom ? scaleMult : 1 / scaleMult;
+    let imatrix = currMatrix.inverse();
+    origin.x = origin.x * imatrix.a + origin.y * imatrix.c + imatrix.e;
+    origin.y = origin.x * imatrix.b + origin.y * imatrix.d + imatrix.f;
+    if (scale * scaleMult >= 0.125 && scale * scaleMult <= 4) {
+        currMatrix.scaleSelf(scaleMult, scaleMult, 1, origin.x, origin.y);
+        scale *= scaleMult;
+    }
+}
 addButton.onclick = () => {
     handleAddItem(textBox);
 };
@@ -210,17 +221,7 @@ textBox.onkeydown = (e) => {
         handleAddItem(textBox);
 };
 canvas.onwheel = (e) => {
-    let deltaScale = 1 - e.deltaY * 0.001;
-    let pos = getPoint(canvas, e);
-    let imatrix = currMatrix.inverse();
-    pos.x = pos.x * imatrix.a + pos.y * imatrix.c + imatrix.e;
-    pos.y = pos.x * imatrix.b + pos.y * imatrix.d + imatrix.f;
-    currMatrix.scaleSelf(deltaScale, deltaScale, 1, pos.x, pos.y);
-    scale = Math.sqrt(currMatrix.a * currMatrix.a + currMatrix.b * currMatrix.b);
-    if (scale < 0.125 || scale > 4) {
-        currMatrix.scaleSelf(1 / deltaScale, 1 / deltaScale, 1, pos.x, pos.y);
-        scale = Math.sqrt(currMatrix.a * currMatrix.a + currMatrix.b * currMatrix.b);
-    }
+    handleScale(1.1, e.deltaY < 0, getPoint(canvas, { x: e.clientX, y: e.clientY }));
 };
 canvas.onmousemove = (e) => {
     if (rectContainPoint(RESET_POS, RESET_WIDTH, RESET_HEIGTH, getPoint(canvas, { x: e.clientX, y: e.clientY }))) {
