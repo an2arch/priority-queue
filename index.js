@@ -90,6 +90,7 @@ let scale = 1;
 let trace = [];
 const canvas = document.getElementById("canvas");
 const container = document.getElementById("container");
+const story = document.getElementById("story");
 const ctx = canvas.getContext("2d");
 const textBox = document.getElementById("text-box");
 const addButton = document.getElementById("add-button");
@@ -172,6 +173,10 @@ function drawResetButton(ctx) {
     ctx.textBaseline = "middle";
     ctx.fillText(text, RESET_POS.x + (RESET_WIDTH - textWidth) / 2, RESET_HEIGTH / 2);
 }
+let addStoryMessage = (message) => {
+    story.insertAdjacentHTML("afterbegin", message + `\t${getCurrentTimeStr()}<br>`);
+};
+let getCurrentTimeStr = () => { return new Date().toLocaleTimeString('en-US', { hour12: false }); };
 function handleAddItem(textBox) {
     if (!textBox.value) {
         textBox.style.borderColor = "#FF3030";
@@ -187,7 +192,7 @@ function handleAddItem(textBox) {
         queue.Enqueue(item, (s) => {
             trace.push([...s]);
         });
-        console.log(trace);
+        addStoryMessage(`Input ${item} element`);
     }
 }
 function handlePopItem() {
@@ -199,6 +204,9 @@ function handlePopItem() {
     if (result === null) {
         alert("There are no items in a queue");
         return;
+    }
+    else {
+        addStoryMessage(`Delete ${result} element`);
     }
     console.log(trace);
 }

@@ -126,3 +126,18 @@
 .button-entry:active {
     background-color: #70dbb8;
 }
+
+.story-container
+{
+    margin: 10px 0px;
+    padding: 10px 30px;
+    position: relative;
+    border: 1px solid #0000;
+    border-radius: 10px;
+    background-color: rgba(228, 148, 174, 0.58);
+
+    font: 16px "RobotoBlack";
+    overflow-wrap: anywhere;
+    text-align: center;
+    overflow-y: auto;
+}

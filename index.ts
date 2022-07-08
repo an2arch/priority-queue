@@ -16,6 +16,7 @@ let trace: number[][] = [];
 
 const canvas: HTMLCanvasElement = document.getElementById("canvas") as HTMLCanvasElement;
 const container: HTMLDivElement = document.getElementById("container") as HTMLDivElement;
+const story: HTMLDivElement = document.getElementById("story") as HTMLDivElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const textBox = document.getElementById("text-box") as HTMLInputElement;
 const addButton = document.getElementById("add-button") as HTMLDivElement;
@@ -128,6 +129,9 @@ function drawResetButton(ctx: CanvasRenderingContext2D) {
     ctx.fillText(text, RESET_POS.x + (RESET_WIDTH - textWidth) / 2, RESET_HEIGTH / 2);
 }
 
+let addStoryMessage = (message: string) => {story.insertAdjacentHTML("afterbegin", message + `\t${getCurrentTimeStr()}<br>`);}
+let getCurrentTimeStr = () => {return new Date().toLocaleTimeString('en-US', {hour12: false})}
+
 function handleAddItem(textBox: HTMLInputElement): void {
     if (!textBox.value) {
         textBox.style.borderColor = "#FF3030";
@@ -144,7 +148,7 @@ function handleAddItem(textBox: HTMLInputElement): void {
         queue.Enqueue(item, (s) => {
             trace.push([...s]);
         });
-        console.log(trace);
+        addStoryMessage(`Input ${item} element`);
     }
 }
 
@@ -159,7 +163,7 @@ function handlePopItem(): void {
         alert("There are no items in a queue");
         return;
     }
-
+    else{ addStoryMessage(`Delete ${result} element`); }
     console.log(trace);
 }
 
