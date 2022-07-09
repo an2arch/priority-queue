@@ -81,7 +81,7 @@ class DecQueue {
 // TODO: state variables
 const ITEM_SPACING_X = 40;
 const ITEM_BOX_PADDING = 10;
-const RESET_WIDTH = 100;
+const RESET_WIDTH = 110;
 const RESET_HEIGTH = 30;
 const RESET_POS = { x: 0, y: 0 };
 const queue = new DecQueue();
@@ -97,7 +97,7 @@ const textBox = document.getElementById("text-box");
 const addButton = document.getElementById("add-button");
 const popButton = document.getElementById("pop-button");
 function initContext(ctx) {
-    ctx.font = "18px RobotoBlack";
+    ctx.font = "bold 18px OpenSans";
     ctx.textBaseline = "middle";
     ctx.resetTransform();
 }

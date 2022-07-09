@@ -1,13 +1,12 @@
 @font-face {
-    font-family: 'RobotoBlack';
-    src: url('../fonts/roboto-black-webfont.woff2') format('woff2'),
-         url('../fonts/roboto-black-webfont.woff') format('woff');
-    font-weight: bold;
+    font-family: 'OpenSans';
+    src: url('../fonts/OpenSans.ttf') format("truetype-variations");
     font-style: normal;
+    font-weight: 100 900;
 }
 
 #app-container {
-    font: 1.2em "RobotoBlack", sans-serif;
+    font: 900 1.2em "OpenSans", sans-serif;
     height: 100vh;
 
     display: -webkit-box;
@@ -25,6 +24,10 @@
 #canvas {
     margin: 10px;
     border: 1px solid #000;
+    display: flex;
+    -webkit-box-flex: 1;
+        -ms-flex-positive: 1;
+            flex-grow: 3;
 }
 
 #functions-container {
@@ -75,6 +78,10 @@
 
 #text-box:focus::-ms-input-placeholder {
     color: transparent;
+}
+
+#text-box::placeholder {
+    font-weight: normal;
 }
 
 #text-box:focus::placeholder {
@@ -142,11 +149,12 @@
     color: #0f4844;
     background-color: #ffa5b6;
 
-    font: 1em "RobotoBlack", sans-serif;
+    font-size: 1em;
     text-decoration: none;
 }
 
 #history-container #headers {
+    font-weight: bold;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -176,6 +184,7 @@
     min-height: min-content;
     flex-direction: row;
     text-align: center;
+    font-weight: normal;
 }
 
 #history-container #overflow::-webkit-scrollbar {

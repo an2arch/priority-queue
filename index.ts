@@ -6,7 +6,7 @@ type Point = { x: number; y: number };
 // TODO: state variables
 const ITEM_SPACING_X: number = 40;
 const ITEM_BOX_PADDING: number = 10;
-const RESET_WIDTH = 100;
+const RESET_WIDTH = 110;
 const RESET_HEIGTH = 30;
 const RESET_POS: Point = { x: 0, y: 0 };
 const queue: DecQueue = new DecQueue();
@@ -24,7 +24,7 @@ const addButton = document.getElementById("add-button") as HTMLDivElement;
 const popButton = document.getElementById("pop-button") as HTMLDivElement;
 
 function initContext(ctx: CanvasRenderingContext2D): void {
-    ctx.font = "18px RobotoBlack";
+    ctx.font = "bold 18px OpenSans";
     ctx.textBaseline = "middle";
     ctx.resetTransform();
 }
