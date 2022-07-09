@@ -163,42 +163,54 @@
 #history-container #headers #main-header{
     flex: 0 0 100%;
     text-align: center;
+    border-bottom: 1px solid black;
 }
 
 #history-container #headers .sub-header {
+
     flex: 0 0 50%;
     text-align: center;
-    border: 1px solid black;
+    border-bottom: 2px solid black;
+    vertical-align: bottom;
+
 }
 
 #history-container #overflow {
-    display: flex;
     overflow: auto;
     flex: 1;
     flex-wrap: wrap;
 }
 
-#history-container #overflow #info-container {
+.info-container * {
+    text-align: center;
+}
+
+#history-container #overflow .info-container {
     display: flex;
-    flex: 0 0 100%;
+    width: 100%;
+    height: 15%;
     min-height: min-content;
     flex-direction: row;
     text-align: center;
     font-weight: normal;
+    vertical-align: bottom;
+    border-bottom: 1px solid black;
 }
 
 #history-container #overflow::-webkit-scrollbar {
     display: none;
 }
 
-#history-container #info-container #messages {
-    flex: 0 0 50%;
-    border-right: 1px solid black;
+#history-container .info-container .messages {
+    flex: 0 0 80%;
 }
 
-#history-container #info-container #time {
-    flex: 0 0 50%;
-    border-left: 1px solid black;
+#history-container .info-container .time {
+    display: flex;
+
+    flex: 0 0 20%;
+    font-size: 12px;
+    align-items: flex-end;
 }
 
 /*
@@ -215,5 +227,10 @@
     overflow-wrap: anywhere;
     text-align: center;
     overflow-y: auto;
+}
+
+.time-container
+{
+
 }
 */
