@@ -89,8 +89,9 @@ let currMatrix = new DOMMatrix();
 let scale = 1;
 let trace = [];
 const canvas = document.getElementById("canvas");
-const container = document.getElementById("container");
-const story = document.getElementById("story");
+const container = document.getElementById("functions-container");
+const messages = document.getElementById("messages");
+const time = document.getElementById("time");
 const ctx = canvas.getContext("2d");
 const textBox = document.getElementById("text-box");
 const addButton = document.getElementById("add-button");
@@ -173,10 +174,14 @@ function drawResetButton(ctx) {
     ctx.textBaseline = "middle";
     ctx.fillText(text, RESET_POS.x + (RESET_WIDTH - textWidth) / 2, RESET_HEIGTH / 2);
 }
-let addStoryMessage = (message) => {
-    story.insertAdjacentHTML("afterbegin", message + `\t${getCurrentTimeStr()}<br>`);
-};
-let getCurrentTimeStr = () => { return new Date().toLocaleTimeString('en-US', { hour12: false }); };
+function getCurrentTimeStr() {
+    return new Date().toLocaleTimeString();
+}
+function addToHistory(message) {
+    // story.insertAdjacentHTML("afterbegin", message + `\t${getCurrentTimeStr()}<br>`);
+    messages.insertAdjacentHTML("afterbegin", `<p>${message}</p>`);
+    time.insertAdjacentHTML("afterbegin", `<p>${getCurrentTimeStr()}</p>`);
+}
 function handleAddItem(textBox) {
     if (!textBox.value) {
         textBox.style.borderColor = "#FF3030";
@@ -192,7 +197,7 @@ function handleAddItem(textBox) {
         queue.Enqueue(item, (s) => {
             trace.push([...s]);
         });
-        addStoryMessage(`Input ${item} element`);
+        addToHistory(`add ${item}`);
     }
 }
 function handlePopItem() {
@@ -200,14 +205,11 @@ function handlePopItem() {
     let result = queue.Dequeue((s) => {
         trace.push([...s]);
     });
-    console.log("Pop item: ", result);
     if (result === null) {
         alert("There are no items in a queue");
         return;
     }
-    else {
-        addStoryMessage(`Delete ${result} element`);
-    }
+    addToHistory(`pop ${result}`);
     console.log(trace);
 }
 function handleScale(scaleMult, zoom, origin) {

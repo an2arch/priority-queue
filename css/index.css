@@ -27,7 +27,7 @@
     border: 1px solid #000;
 }
 
-.button-container {
+#functions-container {
     margin: 10px;
 
     display: -webkit-box;
@@ -49,39 +49,39 @@
     transition: 0.4s;
 }
 
-.text-box::-webkit-inner-spin-button, 
-.text-box::-webkit-outer-spin-button {
+#text-box::-webkit-inner-spin-button, 
+#text-box::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-.text-box::-moz-inner-spin-button,
-.text-box::-moz-outer-spin-button {
+#text-box::-moz-inner-spin-button,
+#text-box::-moz-outer-spin-button {
     -moz-appearance: none;
     margin: 0;
 }
 
-.text-box:focus::-webkit-input-placeholder {
+#text-box:focus::-webkit-input-placeholder {
     color: transparent;
 }
 
-.text-box:focus::-moz-placeholder {
+#text-box:focus::-moz-placeholder {
     color: transparent;
 }
 
-.text-box:focus:-ms-input-placeholder {
+#text-box:focus:-ms-input-placeholder {
     color: transparent;
 }
 
-.text-box:focus::-ms-input-placeholder {
+#text-box:focus::-ms-input-placeholder {
     color: transparent;
 }
 
-.text-box:focus::placeholder {
+#text-box:focus::placeholder {
     color: transparent;
 }
 
-.text-box {
+#text-box {
     margin: 10px 0px;
     padding: 10px 30px;
     position: relative;
@@ -127,6 +127,72 @@
     background-color: #70dbb8;
 }
 
+#history-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    margin: 10px 0px;
+    padding: 10px 30px;
+    position: relative;
+    border: 1px solid #0000;
+    border-radius: 10px;
+    outline: none;
+    height: 30%;
+
+    color: #0f4844;
+    background-color: #ffa5b6;
+
+    font: 1em "RobotoBlack", sans-serif;
+    text-decoration: none;
+}
+
+#history-container #headers {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#history-container #headers #main-header{
+    flex: 0 0 100%;
+    text-align: center;
+}
+
+#history-container #headers .sub-header {
+    flex: 0 0 50%;
+    text-align: center;
+    border: 1px solid black;
+}
+
+#history-container #overflow {
+    display: flex;
+    overflow: auto;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+#history-container #overflow #info-container {
+    display: flex;
+    flex: 0 0 100%;
+    min-height: min-content;
+    flex-direction: row;
+    text-align: center;
+}
+
+#history-container #overflow::-webkit-scrollbar {
+    display: none;
+}
+
+#history-container #info-container #messages {
+    flex: 0 0 50%;
+    border-right: 1px solid black;
+}
+
+#history-container #info-container #time {
+    flex: 0 0 50%;
+    border-left: 1px solid black;
+}
+
+/*
 .story-container
 {
     margin: 10px 0px;
@@ -141,3 +207,4 @@
     text-align: center;
     overflow-y: auto;
 }
+*/
