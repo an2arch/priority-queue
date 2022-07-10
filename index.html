@@ -10,19 +10,22 @@
     </head>
     <body>
         <div id="app-container">
-            <canvas id="canvas"></canvas> 
+            <div id="canvas-container">
+                <canvas id="canvas"></canvas> 
+            </div>
+
             <div id="functions-container">
                 <input id="text-box" type="number" placeholder="Enter item value">
                 <button id="add-button" class="button-entry">ADD ITEM</button>
                 <button id="pop-button" class="button-entry">POP ITEM</button>
 
-                <!-- <p id="story" style="height: 30%" class="story-container"></p> -->
                 <div id="history-container">
                     <div id="headers">
                         <p id="main-header">History</p>
                         <p class="sub-header">Action</p>
                         <p class="sub-header">Time</p>
                     </div>
+
                     <div id="overflow">
                         <div id="info-container">
                             <div id="messages"></div>

@@ -14,6 +14,7 @@ let currMatrix: DOMMatrix = new DOMMatrix();
 let scale: number = 1;
 let trace: number[][] = [];
 
+const canvas_container: HTMLDivElement = document.getElementById("canvas-container") as HTMLDivElement;
 const canvas: HTMLCanvasElement = document.getElementById("canvas") as HTMLCanvasElement;
 const container: HTMLDivElement = document.getElementById("functions-container") as HTMLDivElement;
 const messages: HTMLDivElement = document.getElementById("messages") as HTMLDivElement;
@@ -29,10 +30,27 @@ function initContext(ctx: CanvasRenderingContext2D): void {
     ctx.resetTransform();
 }
 
-function updateSizes(canvas: HTMLCanvasElement, container: HTMLDivElement, maxWidth: number, maxHeight: number) {
-    canvas.width = (maxWidth * 3) / 4;
-    canvas.height = maxHeight - 20;
-    container.style.width = String(maxWidth / 4);
+function updateSizes(canvas: HTMLCanvasElement) {
+    let container = canvas.parentElement || document.documentElement;
+    canvas.style.display = "none";
+
+    let rect = container.getBoundingClientRect();
+    let container_height = rect.height;
+    let container_width = rect.width;
+
+    let ratio = 4 / 3;
+
+    let canvas_height = container_height;
+    let canvas_width = canvas_height * ratio;
+
+    if (canvas_width > container_width) {
+        canvas_width = container_width;
+        canvas_height = canvas_width / ratio;
+    }
+    canvas.width = canvas_width;
+    canvas.height = canvas_height;
+    canvas.style.display = "block";
+
     RESET_POS.x = canvas.width - RESET_WIDTH;
 }
 
@@ -142,11 +160,9 @@ function addToHistory(message: string): void {
 function handleAddItem(textBox: HTMLInputElement): void {
     if (!textBox.value) {
         textBox.style.borderColor = "#FF3030";
-        textBox.style.borderWidth = "2px";
         return;
     }
     textBox.style.borderColor = "#000";
-    textBox.style.borderWidth = "1px";
 
     const item = parseFloat(textBox.value);
     if (!isNaN(item)) {
@@ -170,7 +186,6 @@ function handlePopItem(): void {
         return;
     }
     addToHistory(`pop ${result}`);
-    console.log(trace);
 }
 
 function handleScale(scaleMult: number, zoom: boolean, origin: Point) {
@@ -250,7 +265,7 @@ function loop(time: DOMHighResTimeStamp): void {
 window.addEventListener(
     "load",
     () => {
-        updateSizes(canvas, container, document.documentElement.clientWidth, document.documentElement.clientHeight);
+        updateSizes(canvas);
         initContext(ctx);
         window.requestAnimationFrame(loop);
     },
@@ -260,7 +275,7 @@ window.addEventListener(
 window.addEventListener(
     "resize",
     () => {
-        updateSizes(canvas, container, document.documentElement.clientWidth, document.documentElement.clientHeight);
+        updateSizes(canvas);
         initContext(ctx);
         window.requestAnimationFrame(loop);
     },

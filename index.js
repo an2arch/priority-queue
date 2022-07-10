@@ -88,6 +88,7 @@ const queue = new DecQueue();
 let currMatrix = new DOMMatrix();
 let scale = 1;
 let trace = [];
+const canvas_container = document.getElementById("canvas-container");
 const canvas = document.getElementById("canvas");
 const container = document.getElementById("functions-container");
 const messages = document.getElementById("messages");
@@ -101,10 +102,22 @@ function initContext(ctx) {
     ctx.textBaseline = "middle";
     ctx.resetTransform();
 }
-function updateSizes(canvas, container, maxWidth, maxHeight) {
-    canvas.width = (maxWidth * 3) / 4;
-    canvas.height = maxHeight - 20;
-    container.style.width = String(maxWidth / 4);
+function updateSizes(canvas) {
+    let container = canvas.parentElement || document.documentElement;
+    canvas.style.display = "none";
+    let rect = container.getBoundingClientRect();
+    let container_height = rect.height;
+    let container_width = rect.width;
+    let ratio = 4 / 3;
+    let canvas_height = container_height;
+    let canvas_width = canvas_height * ratio;
+    if (canvas_width > container_width) {
+        canvas_width = container_width;
+        canvas_height = canvas_width / ratio;
+    }
+    canvas.width = canvas_width;
+    canvas.height = canvas_height;
+    canvas.style.display = "block";
     RESET_POS.x = canvas.width - RESET_WIDTH;
 }
 function getPoint(canvas, point) {
@@ -185,11 +198,9 @@ function addToHistory(message) {
 function handleAddItem(textBox) {
     if (!textBox.value) {
         textBox.style.borderColor = "#FF3030";
-        textBox.style.borderWidth = "2px";
         return;
     }
     textBox.style.borderColor = "#000";
-    textBox.style.borderWidth = "1px";
     const item = parseFloat(textBox.value);
     if (!isNaN(item)) {
         textBox.value = "";
@@ -210,7 +221,6 @@ function handlePopItem() {
         return;
     }
     addToHistory(`pop ${result}`);
-    console.log(trace);
 }
 function handleScale(scaleMult, zoom, origin) {
     scaleMult = zoom ? scaleMult : 1 / scaleMult;
@@ -275,12 +285,12 @@ function loop(time) {
     window.requestAnimationFrame(loop);
 }
 window.addEventListener("load", () => {
-    updateSizes(canvas, container, document.documentElement.clientWidth, document.documentElement.clientHeight);
+    updateSizes(canvas);
     initContext(ctx);
     window.requestAnimationFrame(loop);
 }, false);
 window.addEventListener("resize", () => {
-    updateSizes(canvas, container, document.documentElement.clientWidth, document.documentElement.clientHeight);
+    updateSizes(canvas);
     initContext(ctx);
     window.requestAnimationFrame(loop);
 }, false);
