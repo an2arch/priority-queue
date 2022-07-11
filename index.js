@@ -230,11 +230,11 @@ class QueueWidget {
     }
     render(queue) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawResetButton();
         this.ctx.save();
         this.ctx.setTransform(this.currMatrix);
         this.drawItems(queue.GetBuffer());
         this.ctx.restore();
+        this.drawResetButton();
     }
     initContext() {
         this.ctx.font = "bold 18px OpenSans";
@@ -338,7 +338,9 @@ class FunctionsContainer {
         this.addButton.onclick = () => {
             this.handleAddItem(queue);
         };
-        this.popButton.onclick = () => { this.handlePopItem(queue); };
+        this.popButton.onclick = () => {
+            this.handlePopItem(queue);
+        };
         this.textBox.onkeydown = (e) => {
             if (e.key === "Enter")
                 this.handleAddItem(queue);
@@ -377,9 +379,9 @@ const story = document.getElementById("overflow");
 const textBox = document.getElementById("text-box");
 const addButton = document.getElementById("add-button");
 const popButton = document.getElementById("pop-button");
+const queue = new DecQueue();
 let queueWidget = new QueueWidget(canvas);
 let historyContainer = new HistoryContainer(story);
-const queue = new DecQueue();
 let funcContainer = new FunctionsContainer(addButton, popButton, textBox, historyContainer, queue);
 function loop(time) {
     queueWidget.render(queue);

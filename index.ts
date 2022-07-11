@@ -127,11 +127,11 @@ class QueueWidget {
 
     render(queue: DecQueue): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawResetButton();
         this.ctx.save();
         this.ctx.setTransform(this.currMatrix);
         this.drawItems(queue.GetBuffer());
         this.ctx.restore();
+        this.drawResetButton();
     }
 
     private initContext(): void {
@@ -194,7 +194,7 @@ class QueueWidget {
             let x =
                 i !== 0
                     ? positions[Math.ceil(i / 2) - 1].x -
-                    Math.pow(-1, (i + 1) % 2) * this.ITEM_SPACING_X * countChildren
+                      Math.pow(-1, (i + 1) % 2) * this.ITEM_SPACING_X * countChildren
                     : this.ctx.canvas.width / 2;
             positions[i] = { x, y };
         }
@@ -237,17 +237,20 @@ class QueueWidget {
     }
 }
 
-class HistoryContainer{
+class HistoryContainer {
     private story: HTMLDivElement;
     constructor(story: HTMLDivElement) {
         this.story = story;
     }
 
     addToHistory(message: string): void {
-        this.story.insertAdjacentHTML("afterbegin", `<div class="info-container">
+        this.story.insertAdjacentHTML(
+            "afterbegin",
+            `<div class="info-container">
             <div class="messages">${message}</div>
             <div class="time">${this.getCurrentTimeStr()}</div>
-        </div>`)
+        </div>`
+        );
     }
 
     private getCurrentTimeStr(): string {
@@ -261,7 +264,13 @@ class FunctionsContainer {
     private textBox: HTMLInputElement;
     private history: HistoryContainer;
 
-    constructor(addButton: HTMLDivElement, popButton: HTMLDivElement, textBox: HTMLInputElement, story: HistoryContainer, queue: DecQueue) {
+    constructor(
+        addButton: HTMLDivElement,
+        popButton: HTMLDivElement,
+        textBox: HTMLInputElement,
+        story: HistoryContainer,
+        queue: DecQueue
+    ) {
         this.addButton = addButton;
         this.popButton = popButton;
         this.textBox = textBox;
@@ -270,7 +279,9 @@ class FunctionsContainer {
         this.addButton.onclick = () => {
             this.handleAddItem(queue);
         };
-        this.popButton.onclick = () =>{this.handlePopItem(queue)};
+        this.popButton.onclick = () => {
+            this.handlePopItem(queue);
+        };
         this.textBox.onkeydown = (e) => {
             if (e.key === "Enter") this.handleAddItem(queue);
         };
@@ -314,10 +325,11 @@ const textBox = document.getElementById("text-box") as HTMLInputElement;
 const addButton = document.getElementById("add-button") as HTMLDivElement;
 const popButton = document.getElementById("pop-button") as HTMLDivElement;
 
+const queue: DecQueue = new DecQueue();
+
 let queueWidget = new QueueWidget(canvas);
 let historyContainer = new HistoryContainer(story);
-const queue: DecQueue = new DecQueue();
-let funcContainer = new FunctionsContainer(addButton,popButton,textBox,historyContainer,queue);
+let funcContainer = new FunctionsContainer(addButton, popButton, textBox, historyContainer, queue);
 
 function loop(time: DOMHighResTimeStamp) {
     queueWidget.render(queue);
@@ -325,3 +337,4 @@ function loop(time: DOMHighResTimeStamp) {
 }
 
 window.requestAnimationFrame(loop);
+
