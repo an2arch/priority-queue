@@ -1,4 +1,76 @@
 /// <reference path="DecQueue.ts" />
+/// <reference path="FunctionsContainer.ts"/>
+
+class HistoryContainer{
+    private story: HTMLDivElement;
+    constructor(story: HTMLDivElement) {
+        this.story = story;
+    }
+
+    addToHistory(message: string): void {
+        this.story.insertAdjacentHTML("afterbegin", `<div class="info-container">
+            <div class="messages">${message}</div>
+            <div class="time">${this.getCurrentTimeStr()}</div>
+        </div>`)
+    }
+
+    private getCurrentTimeStr(): string {
+        return new Date().toLocaleTimeString();
+    }
+}
+class FunctionsContainer {
+    private addButton: HTMLDivElement;
+    private popButton: HTMLDivElement;
+    private textBox: HTMLInputElement;
+    private history: HistoryContainer;
+
+    constructor(addButton: HTMLDivElement, popButton: HTMLDivElement, textBox: HTMLInputElement, story: HistoryContainer, queue: DecQueue) {
+        this.addButton = addButton;
+        this.popButton = popButton;
+        this.textBox = textBox;
+        this.history = story;
+
+        this.addButton.onclick = () => {
+            this.handleAddItem(queue);
+        };
+        this.popButton.onclick = () =>{this.handlePopItem(queue)};
+        this.textBox.onkeydown = (e) => {
+            if (e.key === "Enter") this.handleAddItem(queue);
+        };
+    }
+
+    handleAddItem(decQueue: DecQueue): void {
+        if (!this.textBox.value) {
+            this.textBox.style.borderColor = "#FF3030";
+            return;
+        }
+        this.textBox.style.borderColor = "#000";
+
+        const item = parseFloat(this.textBox.value);
+        if (!isNaN(item)) {
+            this.textBox.value = "";
+            trace = [];
+            decQueue.Enqueue(item, (s) => {
+                trace.push([...s]);
+            });
+            this.history.addToHistory(`add ${item}`);
+        }
+    }
+
+    handlePopItem(decQueue: DecQueue): void {
+        trace = [];
+        let result = decQueue.Dequeue((s) => {
+            trace.push([...s]);
+        });
+
+        if (result === null) {
+            alert("There are no items in a queue");
+            return;
+        }
+        this.history.addToHistory(`pop ${result}`);
+    }
+}
+
 
 type HexColor = `#${string}`;
 type Point = { x: number; y: number };
@@ -21,6 +93,9 @@ const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const textBox = document.getElementById("text-box") as HTMLInputElement;
 const addButton = document.getElementById("add-button") as HTMLDivElement;
 const popButton = document.getElementById("pop-button") as HTMLDivElement;
+
+const historyContainer: HistoryContainer = new HistoryContainer(story)
+const funcContainer: FunctionsContainer = new FunctionsContainer(addButton,popButton,textBox,historyContainer,queue);
 
 function initContext(ctx: CanvasRenderingContext2D): void {
     ctx.font = "bold 18px OpenSans";
@@ -146,47 +221,6 @@ function drawResetButton(ctx: CanvasRenderingContext2D) {
     ctx.fillText(text, RESET_POS.x + (RESET_WIDTH - textWidth) / 2, RESET_HEIGTH / 2);
 }
 
-function getCurrentTimeStr(): string {
-    return new Date().toLocaleTimeString();
-}
-
-function addToHistory(message: string): void {
-    story.insertAdjacentHTML("afterbegin", `<div class="info-container">
-        <div class="messages">${message}</div>
-        <div class="time">${getCurrentTimeStr()}</div>
-    </div>`);
-}
-function handleAddItem(textBox: HTMLInputElement): void {
-    if (!textBox.value) {
-        textBox.style.borderColor = "#FF3030";
-        return;
-    }
-    textBox.style.borderColor = "#000";
-
-    const item = parseFloat(textBox.value);
-    if (!isNaN(item)) {
-        textBox.value = "";
-        trace = [];
-        queue.Enqueue(item, (s) => {
-            trace.push([...s]);
-        });
-        addToHistory(`add ${item}`);
-    }
-}
-
-function handlePopItem(): void {
-    trace = [];
-    let result = queue.Dequeue((s) => {
-        trace.push([...s]);
-    });
-
-    if (result === null) {
-        alert("There are no items in a queue");
-        return;
-    }
-    addToHistory(`pop ${result}`);
-}
-
 function handleScale(scaleMult: number, zoom: boolean, origin: Point) {
     scaleMult = zoom ? scaleMult : 1 / scaleMult;
 
@@ -200,15 +234,6 @@ function handleScale(scaleMult: number, zoom: boolean, origin: Point) {
     }
 }
 
-addButton.onclick = () => {
-    handleAddItem(textBox);
-};
-
-popButton.onclick = handlePopItem;
-
-textBox.onkeydown = (e) => {
-    if (e.key === "Enter") handleAddItem(textBox);
-};
 
 canvas.onwheel = (e: WheelEvent) => {
     handleScale(1.1, e.deltaY < 0, getPoint(canvas, { x: e.clientX, y: e.clientY }));

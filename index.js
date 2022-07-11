@@ -77,7 +77,130 @@ class DecQueue {
         return this.buffer;
     }
 }
+/*class FunctionsContainer {
+    private addButton: HTMLDivElement;
+    private popButton: HTMLDivElement;
+    private textBox: HTMLInputElement;
+    private story: HTMLDivElement;
+    private queue: DecQueue = new DecQueue();
+
+    constructor(addButton: HTMLDivElement, popButton: HTMLDivElement, textBox: HTMLInputElement, story: HTMLDivElement) {
+        this.addButton = addButton;
+        this.popButton = popButton;
+        this.textBox = textBox;
+        this.story = story;
+
+        this.addButton.onclick = () => {
+            this.handleAddItem();
+        };
+        this.popButton.onclick = this.handlePopItem;
+        this.textBox.onkeydown = (e) => {
+            if (e.key === "Enter") this.handleAddItem();
+        };
+    }
+
+
+    addToHistory(message: string): void {
+        this.story.insertAdjacentHTML("afterbegin", `<div class="info-container">
+            <div class="messages">${message}</div>
+            <div class="time">${this.getCurrentTimeStr()}</div>
+        </div>`)
+    }
+
+    handleAddItem(): void {
+        if (!this.textBox.value) {
+            this.textBox.style.borderColor = "#FF3030";
+            return;
+        }
+        this.textBox.style.borderColor = "#000";
+
+        const item = parseFloat(this.textBox.value);
+        if (!isNaN(item)) {
+            this.textBox.value = "";
+            trace = [];
+            this.queue.Enqueue(item, (s) => {
+                trace.push([...s]);
+            });
+            this.addToHistory(`add ${item}`);
+        }
+    }
+
+    handlePopItem(): void {
+        trace = [];
+        let result = this.queue.Dequeue((s) => {
+            trace.push([...s]);
+        });
+
+        if (result === null) {
+            alert("There are no items in a queue");
+            return;
+        }
+        this.addToHistory(`pop ${result}`);
+    }
+
+    private getCurrentTimeStr(): string {
+        return new Date().toLocaleTimeString();
+    }
+}*/ 
 /// <reference path="DecQueue.ts" />
+/// <reference path="FunctionsContainer.ts"/>
+class HistoryContainer {
+    constructor(story) {
+        this.story = story;
+    }
+    addToHistory(message) {
+        this.story.insertAdjacentHTML("afterbegin", `<div class="info-container">
+            <div class="messages">${message}</div>
+            <div class="time">${this.getCurrentTimeStr()}</div>
+        </div>`);
+    }
+    getCurrentTimeStr() {
+        return new Date().toLocaleTimeString();
+    }
+}
+class FunctionsContainer {
+    constructor(addButton, popButton, textBox, story, queue) {
+        this.addButton = addButton;
+        this.popButton = popButton;
+        this.textBox = textBox;
+        this.history = story;
+        this.addButton.onclick = () => {
+            this.handleAddItem(queue);
+        };
+        this.popButton.onclick = () => { this.handlePopItem(queue); };
+        this.textBox.onkeydown = (e) => {
+            if (e.key === "Enter")
+                this.handleAddItem(queue);
+        };
+    }
+    handleAddItem(decQueue) {
+        if (!this.textBox.value) {
+            this.textBox.style.borderColor = "#FF3030";
+            return;
+        }
+        this.textBox.style.borderColor = "#000";
+        const item = parseFloat(this.textBox.value);
+        if (!isNaN(item)) {
+            this.textBox.value = "";
+            trace = [];
+            decQueue.Enqueue(item, (s) => {
+                trace.push([...s]);
+            });
+            this.history.addToHistory(`add ${item}`);
+        }
+    }
+    handlePopItem(decQueue) {
+        trace = [];
+        let result = decQueue.Dequeue((s) => {
+            trace.push([...s]);
+        });
+        if (result === null) {
+            alert("There are no items in a queue");
+            return;
+        }
+        this.history.addToHistory(`pop ${result}`);
+    }
+}
 // TODO: state variables
 const ITEM_SPACING_X = 40;
 const ITEM_BOX_PADDING = 10;
@@ -95,6 +218,8 @@ const ctx = canvas.getContext("2d");
 const textBox = document.getElementById("text-box");
 const addButton = document.getElementById("add-button");
 const popButton = document.getElementById("pop-button");
+const historyContainer = new HistoryContainer(story);
+const funcContainer = new FunctionsContainer(addButton, popButton, textBox, historyContainer, queue);
 function initContext(ctx) {
     ctx.font = "bold 18px OpenSans";
     ctx.textBaseline = "middle";
@@ -185,42 +310,6 @@ function drawResetButton(ctx) {
     ctx.textBaseline = "middle";
     ctx.fillText(text, RESET_POS.x + (RESET_WIDTH - textWidth) / 2, RESET_HEIGTH / 2);
 }
-function getCurrentTimeStr() {
-    return new Date().toLocaleTimeString();
-}
-function addToHistory(message) {
-    story.insertAdjacentHTML("afterbegin", `<div class="info-container">
-        <p class="messages">${message}</p>
-        <p class="time">${getCurrentTimeStr()}</p>
-    </div>`);
-}
-function handleAddItem(textBox) {
-    if (!textBox.value) {
-        textBox.style.borderColor = "#FF3030";
-        return;
-    }
-    textBox.style.borderColor = "#000";
-    const item = parseFloat(textBox.value);
-    if (!isNaN(item)) {
-        textBox.value = "";
-        trace = [];
-        queue.Enqueue(item, (s) => {
-            trace.push([...s]);
-        });
-        addToHistory(`add ${item}`);
-    }
-}
-function handlePopItem() {
-    trace = [];
-    let result = queue.Dequeue((s) => {
-        trace.push([...s]);
-    });
-    if (result === null) {
-        alert("There are no items in a queue");
-        return;
-    }
-    addToHistory(`pop ${result}`);
-}
 function handleScale(scaleMult, zoom, origin) {
     scaleMult = zoom ? scaleMult : 1 / scaleMult;
     let imatrix = currMatrix.inverse();
@@ -231,14 +320,6 @@ function handleScale(scaleMult, zoom, origin) {
         scale *= scaleMult;
     }
 }
-addButton.onclick = () => {
-    handleAddItem(textBox);
-};
-popButton.onclick = handlePopItem;
-textBox.onkeydown = (e) => {
-    if (e.key === "Enter")
-        handleAddItem(textBox);
-};
 canvas.onwheel = (e) => {
     handleScale(1.1, e.deltaY < 0, getPoint(canvas, { x: e.clientX, y: e.clientY }));
 };
