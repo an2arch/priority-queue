@@ -111,7 +111,6 @@ class QueueWidget {
         this.ITEM_BOX_PADDING = 10;
         this.RESET_WIDTH = 110;
         this.RESET_HEIGTH = 30;
-        this.queue = new DecQueue();
         this.currMatrix = new DOMMatrix();
         this.scale = 1;
         this.canvas = canvas;
@@ -160,19 +159,12 @@ class QueueWidget {
             this.initContext();
         }, false);
     }
-    addItem(value) {
-        this.queue.Enqueue(value);
-    }
-    popItem() {
-        let result = this.queue.Dequeue();
-        return result !== null ? result : undefined;
-    }
-    render() {
+    render(queue) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawResetButton();
         this.ctx.save();
         this.ctx.setTransform(this.currMatrix);
-        this.drawItems();
+        this.drawItems(queue.GetBuffer());
         this.ctx.restore();
     }
     initContext() {
@@ -208,8 +200,7 @@ class QueueWidget {
         this.ctx.fillStyle = textColor;
         this.ctx.fillText(String(item), cx, cy + textHeight / 2);
     }
-    drawItems() {
-        let items = this.queue.GetBuffer();
+    drawItems(items) {
         // TODO: this may be state variables
         let levelCount = Math.floor(Math.log2(items.length));
         let positions = [];
@@ -261,13 +252,14 @@ const textBox = document.getElementById("text-box");
 const addButton = document.getElementById("add-button");
 const popButton = document.getElementById("pop-button");
 let queueWidget = new QueueWidget(canvas);
+const queue = new DecQueue();
 function addToHistory(message) {
     story.insertAdjacentHTML("afterbegin", `<div class="info-container">
         <div class="messages">${message}</div>
         <div class="time">${getCurrentTimeStr()}</div>
     </div>`);
 }
-function addItemHandle() {
+function addItemHandle(queue) {
     if (!textBox.value) {
         textBox.style.borderColor = "#FF3030";
         return;
@@ -276,14 +268,16 @@ function addItemHandle() {
     const item = parseFloat(textBox.value);
     if (!isNaN(item)) {
         textBox.value = "";
-        queueWidget.addItem(item);
+        queue.Enqueue(item);
         addToHistory(`add ${item}`);
     }
 }
-addButton.onclick = addItemHandle;
+addButton.onclick = () => {
+    addItemHandle(queue);
+};
 popButton.onclick = () => {
-    let result = queueWidget.popItem();
-    if (result === undefined) {
+    let result = queue.Dequeue();
+    if (result === null) {
         alert("There are no items in a queue");
         return;
     }
@@ -291,10 +285,10 @@ popButton.onclick = () => {
 };
 textBox.onkeydown = (e) => {
     if (e.key === "Enter")
-        addItemHandle();
+        addItemHandle(queue);
 };
 function loop(time) {
-    queueWidget.render();
+    queueWidget.render(queue);
     window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);

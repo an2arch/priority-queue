@@ -42,7 +42,6 @@ class QueueWidget {
     private readonly ITEM_BOX_PADDING: number = 10;
     private readonly RESET_WIDTH: number = 110;
     private readonly RESET_HEIGTH: number = 30;
-    private readonly queue: DecQueue = new DecQueue();
     private currMatrix: DOMMatrix = new DOMMatrix();
     private scale: number = 1;
     private canvas: HTMLCanvasElement;
@@ -126,21 +125,12 @@ class QueueWidget {
         );
     }
 
-    addItem(value: number): void {
-        this.queue.Enqueue(value);
-    }
-
-    popItem(): number | undefined {
-        let result = this.queue.Dequeue();
-        return result !== null ? result : undefined;
-    }
-
-    render(): void {
+    render(queue: DecQueue): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawResetButton();
         this.ctx.save();
         this.ctx.setTransform(this.currMatrix);
-        this.drawItems();
+        this.drawItems(queue.GetBuffer());
         this.ctx.restore();
     }
 
@@ -192,9 +182,7 @@ class QueueWidget {
         this.ctx.fillText(String(item), cx, cy + textHeight / 2);
     }
 
-    private drawItems() {
-        let items = this.queue.GetBuffer();
-
+    private drawItems(items: number[]) {
         // TODO: this may be state variables
         let levelCount = Math.floor(Math.log2(items.length));
         let positions: Point[] = [];
@@ -256,6 +244,7 @@ const addButton = document.getElementById("add-button") as HTMLDivElement;
 const popButton = document.getElementById("pop-button") as HTMLDivElement;
 
 let queueWidget = new QueueWidget(canvas);
+const queue: DecQueue = new DecQueue();
 
 function addToHistory(message: string): void {
     story.insertAdjacentHTML(
@@ -267,7 +256,7 @@ function addToHistory(message: string): void {
     );
 }
 
-function addItemHandle(): void {
+function addItemHandle(queue: DecQueue): void {
     if (!textBox.value) {
         textBox.style.borderColor = "#FF3030";
         return;
@@ -277,17 +266,19 @@ function addItemHandle(): void {
     const item = parseFloat(textBox.value);
     if (!isNaN(item)) {
         textBox.value = "";
-        queueWidget.addItem(item);
+        queue.Enqueue(item);
         addToHistory(`add ${item}`);
     }
 }
 
-addButton.onclick = addItemHandle;
+addButton.onclick = () => {
+    addItemHandle(queue);
+};
 
 popButton.onclick = () => {
-    let result = queueWidget.popItem();
+    let result = queue.Dequeue();
 
-    if (result === undefined) {
+    if (result === null) {
         alert("There are no items in a queue");
         return;
     }
@@ -296,11 +287,11 @@ popButton.onclick = () => {
 };
 
 textBox.onkeydown = (e) => {
-    if (e.key === "Enter") addItemHandle();
+    if (e.key === "Enter") addItemHandle(queue);
 };
 
 function loop(time: DOMHighResTimeStamp) {
-    queueWidget.render();
+    queueWidget.render(queue);
     window.requestAnimationFrame(loop);
 }
 
