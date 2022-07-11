@@ -90,9 +90,7 @@ let scale = 1;
 let trace = [];
 const canvas_container = document.getElementById("canvas-container");
 const canvas = document.getElementById("canvas");
-const container = document.getElementById("functions-container");
-const messages = document.getElementById("messages");
-const time = document.getElementById("time");
+const story = document.getElementById("overflow");
 const ctx = canvas.getContext("2d");
 const textBox = document.getElementById("text-box");
 const addButton = document.getElementById("add-button");
@@ -191,9 +189,10 @@ function getCurrentTimeStr() {
     return new Date().toLocaleTimeString();
 }
 function addToHistory(message) {
-    // story.insertAdjacentHTML("afterbegin", message + `\t${getCurrentTimeStr()}<br>`);
-    messages.insertAdjacentHTML("afterbegin", `<p>${message}</p>`);
-    time.insertAdjacentHTML("afterbegin", `<p>${getCurrentTimeStr()}</p>`);
+    story.insertAdjacentHTML("afterbegin", `<div class="info-container">
+        <p class="messages">${message}</p>
+        <p class="time">${getCurrentTimeStr()}</p>
+    </div>`);
 }
 function handleAddItem(textBox) {
     if (!textBox.value) {

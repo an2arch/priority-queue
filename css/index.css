@@ -215,7 +215,7 @@
         -ms-flex: 0 0 50%;
             flex: 0 0 50%;
     text-align: center;
-    border: 1px solid black;
+    border-bottom: 2px solid black;
 }
 
 #history-container #overflow {
@@ -230,7 +230,7 @@
         flex-wrap: wrap;
 }
 
-#history-container #overflow #info-container {
+#history-container #overflow .info-container {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -246,22 +246,22 @@
             flex-direction: row;
     text-align: center;
     font-weight: normal;
+    border-bottom: 1px solid black;
 }
 
 #history-container #overflow::-webkit-scrollbar {
     display: none;
 }
 
-#history-container #info-container #messages {
+#history-container .info-container .messages {
     -webkit-box-flex: 0;
-        -ms-flex: 0 0 50%;
-            flex: 0 0 50%;
-    border-right: 1px solid black;
+        -ms-flex: 0 0 80%;
+            flex: 0 0 80%;
 }
 
-#history-container #info-container #time {
+#history-container .info-container .time {
     -webkit-box-flex: 0;
-        -ms-flex: 0 0 50%;
-            flex: 0 0 50%;
-    border-left: 1px solid black;
+        -ms-flex: 0 0 20%;
+            flex: 0 0 20%;
+    font-size: 14px;
 }

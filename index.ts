@@ -16,9 +16,7 @@ let trace: number[][] = [];
 
 const canvas_container: HTMLDivElement = document.getElementById("canvas-container") as HTMLDivElement;
 const canvas: HTMLCanvasElement = document.getElementById("canvas") as HTMLCanvasElement;
-const container: HTMLDivElement = document.getElementById("functions-container") as HTMLDivElement;
-const messages: HTMLDivElement = document.getElementById("messages") as HTMLDivElement;
-const time: HTMLDivElement = document.getElementById("time") as HTMLDivElement;
+const story: HTMLDivElement = document.getElementById("overflow") as HTMLDivElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const textBox = document.getElementById("text-box") as HTMLInputElement;
 const addButton = document.getElementById("add-button") as HTMLDivElement;
@@ -153,9 +151,10 @@ function getCurrentTimeStr(): string {
 }
 
 function addToHistory(message: string): void {
-    // story.insertAdjacentHTML("afterbegin", message + `\t${getCurrentTimeStr()}<br>`);
-    messages.insertAdjacentHTML("afterbegin", `<p>${message}</p>`);
-    time.insertAdjacentHTML("afterbegin", `<p>${getCurrentTimeStr()}</p>`);
+    story.insertAdjacentHTML("afterbegin", `<div class="info-container">
+        <div class="messages">${message}</div>
+        <div class="time">${getCurrentTimeStr()}</div>
+    </div>`);
 }
 function handleAddItem(textBox: HTMLInputElement): void {
     if (!textBox.value) {
