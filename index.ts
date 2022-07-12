@@ -37,19 +37,65 @@ function getCurrentTimeStr(): string {
     return new Date().toLocaleTimeString();
 }
 
+class Item {
+    private static readonly RECT_COLOR: HexColor = "#E494AE";
+    private static readonly TEXT_COLOR: HexColor = "#0F4844";
+    private static readonly LINE_COLOR: HexColor = "#0F4844";
+    private static readonly BOX_PADDING: number = 10;
+    value: number;
+    level: number;
+    canvasPos: Point;
+
+    constructor(value: number, level: number, pos: Point) {
+        this.value = value;
+        this.level = level;
+        this.canvasPos = pos;
+    }
+
+    drawLineToItem(ctx: CanvasRenderingContext2D, other: Item) {
+        ctx.strokeStyle = Item.LINE_COLOR;
+        ctx.beginPath();
+        ctx.moveTo(this.canvasPos.x, this.canvasPos.y);
+        ctx.lineTo(other.canvasPos.x, other.canvasPos.y);
+        ctx.stroke();
+    }
+
+    render(ctx: CanvasRenderingContext2D) {
+        let textWidth = ctx.measureText(String(this.value)).width;
+        let textHeight = parseFloat(ctx.font.match(/\d+px/)![0]);
+
+        let cx: number = this.canvasPos.x - textWidth / 2;
+        let cy: number = this.canvasPos.y - textHeight / 2;
+
+        ctx.fillStyle = Item.RECT_COLOR;
+        ctx.fillRect(
+            cx - Item.BOX_PADDING,
+            cy - Item.BOX_PADDING,
+            textWidth + 2 * Item.BOX_PADDING,
+            textHeight + 2 * Item.BOX_PADDING
+        );
+
+        ctx.fillStyle = Item.TEXT_COLOR;
+        ctx.fillText(String(this.value), cx, cy + textHeight / 2);
+    }
+}
+
 class QueueWidget {
     private readonly ITEM_SPACING_X: number = 40;
-    private readonly ITEM_BOX_PADDING: number = 10;
     private readonly RESET_WIDTH: number = 110;
     private readonly RESET_HEIGTH: number = 30;
     private currMatrix: DOMMatrix = new DOMMatrix();
     private scale: number = 1;
+
+    private items: Item[] = [];
+
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+
         this.initContext();
         this.updateSizes();
 
@@ -131,11 +177,30 @@ class QueueWidget {
         );
     }
 
-    render(queue: DecQueue): void {
+    update(queue: DecQueue): void {
+        let levelCount = Math.floor(Math.log2(queue.GetBuffer().length));
+        this.items = [];
+
+        for (let i = 0; i < queue.GetBuffer().length; ++i) {
+            let levelCurrent = Math.floor(Math.log2(i + 1));
+            let countChildren = Math.pow(2, levelCount - levelCurrent);
+
+            let y = this.canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50;
+            let x =
+                i !== 0
+                    ? this.items[Math.ceil(i / 2) - 1].canvasPos.x -
+                      Math.pow(-1, (i + 1) % 2) * this.ITEM_SPACING_X * countChildren
+                    : this.ctx.canvas.width / 2;
+
+            this.items.push(new Item(queue.GetBuffer()[i], levelCurrent, { x, y }));
+        }
+    }
+
+    render(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.save();
         this.ctx.setTransform(this.currMatrix);
-        this.drawItems(queue.GetBuffer());
+        this.drawItems();
         this.ctx.restore();
         this.drawResetButton();
     }
@@ -169,50 +234,15 @@ class QueueWidget {
         this.canvas.style.display = savedDisplay;
     }
 
-    private drawItem(point: Point, item: number, rectColor: HexColor, textColor: HexColor): void {
-        let textWidth = this.ctx.measureText(String(item)).width;
-        let textHeight = 18;
-
-        let cx: number = point.x - textWidth / 2;
-        let cy: number = point.y - textHeight / 2;
-
-        this.ctx.fillStyle = rectColor;
-        this.ctx.fillRect(
-            cx - this.ITEM_BOX_PADDING,
-            cy - this.ITEM_BOX_PADDING,
-            textWidth + 2 * this.ITEM_BOX_PADDING,
-            textHeight + 2 * this.ITEM_BOX_PADDING
-        );
-
-        this.ctx.fillStyle = textColor;
-        this.ctx.fillText(String(item), cx, cy + textHeight / 2);
-    }
-
-    private drawItems(items: number[]) {
-        // TODO: this may be state variables
-        let levelCount = Math.floor(Math.log2(items.length));
-        let positions: Point[] = [];
-
-        for (let i = 0; i < items.length; ++i) {
-            let levelCurrent = Math.floor(Math.log2(i + 1));
-            let countChildren = Math.pow(2, levelCount - levelCurrent);
-            let y = this.canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50;
-            let x =
-                i !== 0
-                    ? positions[Math.ceil(i / 2) - 1].x -
-                      Math.pow(-1, (i + 1) % 2) * this.ITEM_SPACING_X * countChildren
-                    : this.ctx.canvas.width / 2;
-            positions[i] = { x, y };
-        }
-
-        for (let i = 0; i < items.length; ++i) {
-            let parrent = Math.floor((i - 1) / 2);
+    private drawItems() {
+        for (const [idx, item] of this.items.entries()) {
+            let parrent = Math.floor((idx - 1) / 2);
             if (parrent >= 0) {
-                drawLine(this.ctx, positions[i], positions[parrent], "#0f4844");
+                item.drawLineToItem(this.ctx, this.items[parrent]);
             }
         }
-        for (let i = 0; i < items.length; ++i) {
-            this.drawItem(positions[i], items[i], "#e494ae", "#0f4844");
+        for (const item of this.items) {
+            item.render(this.ctx);
         }
     }
 
@@ -338,7 +368,8 @@ let historyContainer = new HistoryContainer(story);
 let funcContainer = new FunctionsContainer(addButton, popButton, textBox, historyContainer, queue);
 
 function loop(time: DOMHighResTimeStamp) {
-    queueWidget.render(queue);
+    queueWidget.update(queue);
+    queueWidget.render();
     window.requestAnimationFrame(loop);
 }
 

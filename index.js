@@ -174,14 +174,42 @@ function drawLine(ctx, pointFrom, pointTo, color) {
 function getCurrentTimeStr() {
     return new Date().toLocaleTimeString();
 }
+class Item {
+    constructor(value, level, pos) {
+        this.value = value;
+        this.level = level;
+        this.canvasPos = pos;
+    }
+    drawLineToItem(ctx, other) {
+        ctx.strokeStyle = Item.LINE_COLOR;
+        ctx.beginPath();
+        ctx.moveTo(this.canvasPos.x, this.canvasPos.y);
+        ctx.lineTo(other.canvasPos.x, other.canvasPos.y);
+        ctx.stroke();
+    }
+    render(ctx) {
+        let textWidth = ctx.measureText(String(this.value)).width;
+        let textHeight = parseFloat(ctx.font.match(/\d+px/)[0]);
+        let cx = this.canvasPos.x - textWidth / 2;
+        let cy = this.canvasPos.y - textHeight / 2;
+        ctx.fillStyle = Item.RECT_COLOR;
+        ctx.fillRect(cx - Item.BOX_PADDING, cy - Item.BOX_PADDING, textWidth + 2 * Item.BOX_PADDING, textHeight + 2 * Item.BOX_PADDING);
+        ctx.fillStyle = Item.TEXT_COLOR;
+        ctx.fillText(String(this.value), cx, cy + textHeight / 2);
+    }
+}
+Item.RECT_COLOR = "#E494AE";
+Item.TEXT_COLOR = "#0F4844";
+Item.LINE_COLOR = "#0F4844";
+Item.BOX_PADDING = 10;
 class QueueWidget {
     constructor(canvas) {
         this.ITEM_SPACING_X = 40;
-        this.ITEM_BOX_PADDING = 10;
         this.RESET_WIDTH = 110;
         this.RESET_HEIGTH = 30;
         this.currMatrix = new DOMMatrix();
         this.scale = 1;
+        this.items = [];
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
         this.initContext();
@@ -229,11 +257,25 @@ class QueueWidget {
             this.initContext();
         }, false);
     }
-    render(queue) {
+    update(queue) {
+        let levelCount = Math.floor(Math.log2(queue.GetBuffer().length));
+        this.items = [];
+        for (let i = 0; i < queue.GetBuffer().length; ++i) {
+            let levelCurrent = Math.floor(Math.log2(i + 1));
+            let countChildren = Math.pow(2, levelCount - levelCurrent);
+            let y = this.canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50;
+            let x = i !== 0
+                ? this.items[Math.ceil(i / 2) - 1].canvasPos.x -
+                    Math.pow(-1, (i + 1) % 2) * this.ITEM_SPACING_X * countChildren
+                : this.ctx.canvas.width / 2;
+            this.items.push(new Item(queue.GetBuffer()[i], levelCurrent, { x, y }));
+        }
+    }
+    render() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.save();
         this.ctx.setTransform(this.currMatrix);
-        this.drawItems(queue.GetBuffer());
+        this.drawItems();
         this.ctx.restore();
         this.drawResetButton();
     }
@@ -260,38 +302,15 @@ class QueueWidget {
         this.canvas.height = canvas_height;
         this.canvas.style.display = savedDisplay;
     }
-    drawItem(point, item, rectColor, textColor) {
-        let textWidth = this.ctx.measureText(String(item)).width;
-        let textHeight = 18;
-        let cx = point.x - textWidth / 2;
-        let cy = point.y - textHeight / 2;
-        this.ctx.fillStyle = rectColor;
-        this.ctx.fillRect(cx - this.ITEM_BOX_PADDING, cy - this.ITEM_BOX_PADDING, textWidth + 2 * this.ITEM_BOX_PADDING, textHeight + 2 * this.ITEM_BOX_PADDING);
-        this.ctx.fillStyle = textColor;
-        this.ctx.fillText(String(item), cx, cy + textHeight / 2);
-    }
-    drawItems(items) {
-        // TODO: this may be state variables
-        let levelCount = Math.floor(Math.log2(items.length));
-        let positions = [];
-        for (let i = 0; i < items.length; ++i) {
-            let levelCurrent = Math.floor(Math.log2(i + 1));
-            let countChildren = Math.pow(2, levelCount - levelCurrent);
-            let y = this.canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50;
-            let x = i !== 0
-                ? positions[Math.ceil(i / 2) - 1].x -
-                    Math.pow(-1, (i + 1) % 2) * this.ITEM_SPACING_X * countChildren
-                : this.ctx.canvas.width / 2;
-            positions[i] = { x, y };
-        }
-        for (let i = 0; i < items.length; ++i) {
-            let parrent = Math.floor((i - 1) / 2);
+    drawItems() {
+        for (const [idx, item] of this.items.entries()) {
+            let parrent = Math.floor((idx - 1) / 2);
             if (parrent >= 0) {
-                drawLine(this.ctx, positions[i], positions[parrent], "#0f4844");
+                item.drawLineToItem(this.ctx, this.items[parrent]);
             }
         }
-        for (let i = 0; i < items.length; ++i) {
-            this.drawItem(positions[i], items[i], "#e494ae", "#0f4844");
+        for (const item of this.items) {
+            item.render(this.ctx);
         }
     }
     drawResetButton() {
@@ -385,7 +404,8 @@ let queueWidget = new QueueWidget(canvas);
 let historyContainer = new HistoryContainer(story);
 let funcContainer = new FunctionsContainer(addButton, popButton, textBox, historyContainer, queue);
 function loop(time) {
-    queueWidget.render(queue);
+    queueWidget.update(queue);
+    queueWidget.render();
     window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);
