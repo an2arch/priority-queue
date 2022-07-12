@@ -208,7 +208,8 @@ class QueueWidget {
             this.canvas.onmousemove = (e) => {
                 let offsetX = e.movementX;
                 let offsetY = e.movementY;
-                this.currMatrix.translateSelf(offsetX / this.scale, offsetY / this.scale);
+                let browserScale = window.devicePixelRatio;
+                this.currMatrix.translateSelf(offsetX / (this.scale * browserScale), offsetY / (this.scale * browserScale));
             };
             this.canvas.onmouseup = () => {
                 this.canvas.onmousemove = savedOnMouseMove;

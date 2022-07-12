@@ -92,7 +92,13 @@ class QueueWidget {
             this.canvas.onmousemove = (e: MouseEvent) => {
                 let offsetX: number = e.movementX;
                 let offsetY: number = e.movementY;
-                this.currMatrix.translateSelf(offsetX / this.scale, offsetY / this.scale);
+
+                let browserScale = window.devicePixelRatio;
+
+                this.currMatrix.translateSelf(
+                    offsetX / (this.scale * browserScale),
+                    offsetY / (this.scale * browserScale)
+                );
             };
 
             this.canvas.onmouseup = () => {
@@ -337,4 +343,3 @@ function loop(time: DOMHighResTimeStamp) {
 }
 
 window.requestAnimationFrame(loop);
-
