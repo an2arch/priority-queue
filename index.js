@@ -162,7 +162,7 @@ function rectContainPoint(rectPos, rectWidth, rectHeight, point) {
         point.y >= rectPos.y &&
         point.y <= rectPos.y + rectHeight);
 }
-function drawLine(ctx, pointFrom, pointTo, color) {
+function drawLine(ctx, pointFrom, pointTo, color = null) {
     if (color) {
         ctx.strokeStyle = color;
     }
@@ -181,11 +181,7 @@ class Item {
         this.canvasPos = pos;
     }
     drawLineToItem(ctx, other) {
-        ctx.strokeStyle = Item.LINE_COLOR;
-        ctx.beginPath();
-        ctx.moveTo(this.canvasPos.x, this.canvasPos.y);
-        ctx.lineTo(other.canvasPos.x, other.canvasPos.y);
-        ctx.stroke();
+        drawLine(ctx, this.canvasPos, other.canvasPos, Item.LINE_COLOR);
     }
     render(ctx) {
         let textWidth = ctx.measureText(String(this.value)).width;

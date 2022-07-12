@@ -23,7 +23,12 @@ function rectContainPoint(rectPos: Point, rectWidth: number, rectHeight: number,
     );
 }
 
-function drawLine(ctx: CanvasRenderingContext2D, pointFrom: Point, pointTo: Point, color: HexColor): void {
+function drawLine(
+    ctx: CanvasRenderingContext2D,
+    pointFrom: Point,
+    pointTo: Point,
+    color: HexColor | null = null
+): void {
     if (color) {
         ctx.strokeStyle = color;
     }
@@ -53,11 +58,7 @@ class Item {
     }
 
     drawLineToItem(ctx: CanvasRenderingContext2D, other: Item) {
-        ctx.strokeStyle = Item.LINE_COLOR;
-        ctx.beginPath();
-        ctx.moveTo(this.canvasPos.x, this.canvasPos.y);
-        ctx.lineTo(other.canvasPos.x, other.canvasPos.y);
-        ctx.stroke();
+        drawLine(ctx, this.canvasPos, other.canvasPos, Item.LINE_COLOR);
     }
 
     render(ctx: CanvasRenderingContext2D) {
