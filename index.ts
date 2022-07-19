@@ -1,6 +1,6 @@
-import DecQueue from "./DecQueue.js";
-import FunctionsContainer from "./FunctionsContainer.js";
-import QueueWidget from "./QueueWidget.js";
+import DecQueue from "./modules/DecQueue.js";
+import FunctionsContainer from "./modules/FunctionsContainer.js";
+import QueueWidget from "./modules/QueueWidget.js";
 
 const canvas: HTMLCanvasElement = document.getElementById("canvas") as HTMLCanvasElement;
 const story: HTMLDivElement = document.getElementById("overflow") as HTMLDivElement;
