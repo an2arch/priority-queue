@@ -7,7 +7,7 @@
             "es5",
             "es6"
         ],
-        "outFile": "./index.js",
+        // "outFile": "./index.js",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
