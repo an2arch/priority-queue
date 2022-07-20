@@ -28,14 +28,15 @@ export default class FunctionsContainer {
         addButton: HTMLDivElement,
         popButton: HTMLDivElement,
         textBox: HTMLInputElement,
-        storyDiv: HTMLDivElement,
-        queue: DecQueue
+        storyDiv: HTMLDivElement
     ) {
         this.addButton = addButton;
         this.popButton = popButton;
         this.textBox = textBox;
         this.history = new HistoryContainer(storyDiv);
+    }
 
+    link(queue: DecQueue): void {
         this.addButton.onclick = () => {
             this.handleAddItem(queue);
         };
@@ -78,4 +79,3 @@ export default class FunctionsContainer {
         this.history.addToHistory(`pop ${result}`);
     }
 }
-

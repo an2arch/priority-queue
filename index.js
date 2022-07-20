@@ -8,7 +8,8 @@ const addButton = document.getElementById("add-button");
 const popButton = document.getElementById("pop-button");
 const queue = new DecQueue();
 let queueWidget = new QueueWidget(canvas);
-let funcContainer = new FunctionsContainer(addButton, popButton, textBox, story, queue);
+let funcContainer = new FunctionsContainer(addButton, popButton, textBox, story);
+funcContainer.link(queue);
 function loop(time) {
     queueWidget.update(queue);
     queueWidget.render();

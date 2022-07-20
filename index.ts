@@ -10,7 +10,8 @@ const popButton = document.getElementById("pop-button") as HTMLDivElement;
 
 const queue: DecQueue = new DecQueue();
 let queueWidget = new QueueWidget(canvas);
-let funcContainer = new FunctionsContainer(addButton, popButton, textBox, story, queue);
+let funcContainer = new FunctionsContainer(addButton, popButton, textBox, story);
+funcContainer.link(queue);
 
 function loop(time: DOMHighResTimeStamp) {
     queueWidget.update(queue);

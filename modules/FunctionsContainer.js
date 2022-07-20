@@ -11,11 +11,13 @@ class HistoryContainer {
     }
 }
 export default class FunctionsContainer {
-    constructor(addButton, popButton, textBox, storyDiv, queue) {
+    constructor(addButton, popButton, textBox, storyDiv) {
         this.addButton = addButton;
         this.popButton = popButton;
         this.textBox = textBox;
         this.history = new HistoryContainer(storyDiv);
+    }
+    link(queue) {
         this.addButton.onclick = () => {
             this.handleAddItem(queue);
         };
