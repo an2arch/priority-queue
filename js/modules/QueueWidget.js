@@ -59,6 +59,7 @@ export default class QueueWidget {
         let levelCount = Math.floor(Math.log2(queue.GetBuffer().length));
         this.items = [];
         for (let i = 0; i < queue.GetBuffer().length; ++i) {
+            let newItem = new DrawableItem(queue.GetBuffer()[i]);
             let levelCurrent = Math.floor(Math.log2(i + 1));
             let countChildren = Math.pow(2, levelCount - levelCurrent);
             let y = this.canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50;
@@ -66,7 +67,9 @@ export default class QueueWidget {
                 ? this.items[Math.ceil(i / 2) - 1].canvasPos.x -
                     Math.pow(-1, (i + 1) % 2) * this.ITEM_SPACING_X * countChildren
                 : this.ctx.canvas.width / 2;
-            this.items.push(new DrawableItem(queue.GetBuffer()[i], levelCurrent, { x, y }));
+            newItem.level = levelCurrent;
+            newItem.canvasPos = { x, y };
+            this.items.push(newItem);
         }
     }
     render() {

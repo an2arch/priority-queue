@@ -1,4 +1,5 @@
 type traceFunc = (a: number[]) => void;
+
 export default class DecQueue {
     private buffer: number[] = [];
 

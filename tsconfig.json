@@ -8,6 +8,7 @@
             "es6"
         ],
         // "outFile": "./index.js",
+        "outDir": "js",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
