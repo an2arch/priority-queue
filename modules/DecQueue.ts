@@ -1,86 +1,88 @@
-type traceFunc = (a: number[]) => void;
+import Item from "./Item.js";
 
-export default class DecQueue {
-    private buffer: number[] = [];
+export type traceFunc<T> = (a: T[]) => void;
 
-    constructor(list?: number[]) {
+export class DecQueue<T extends Item> {
+    private m_buffer: T[] = [];
+
+    constructor(list?: T[]) {
         if (list) {
-            this.buffer = list;
-            for (let i = Math.floor(this.buffer.length / 2) - 1; i >= 0; --i) {
+            this.m_buffer = list;
+            for (let i = Math.floor(this.m_buffer.length / 2) - 1; i >= 0; --i) {
                 this.SiftDown(i);
             }
         }
     }
 
-    private SiftDown(idx: number, trace?: traceFunc): void {
-        if (trace) trace(this.buffer);
-        while (2 * idx + 1 < this.buffer.length) {
+    private SiftDown(idx: number, trace?: traceFunc<T>): void {
+        if (trace) trace(this.m_buffer);
+        while (2 * idx + 1 < this.m_buffer.length) {
             let left = 2 * idx + 1;
             let right = 2 * idx + 2;
             let largest = left;
-            if (right < this.buffer.length && this.buffer[right] > this.buffer[largest]) {
+            if (right < this.m_buffer.length && this.m_buffer[right].greater(this.m_buffer[largest])) {
                 largest = right;
             }
-            if (this.buffer[largest] <= this.buffer[idx]) {
+            if (this.m_buffer[largest].lessEq(this.m_buffer[idx])) {
                 break;
             }
-            [this.buffer[largest], this.buffer[idx]] = [this.buffer[idx], this.buffer[largest]];
+            [this.m_buffer[largest], this.m_buffer[idx]] = [this.m_buffer[idx], this.m_buffer[largest]];
             idx = largest;
-            if (trace) trace(this.buffer);
+            if (trace) trace(this.m_buffer);
         }
     }
 
-    private SiftUp(idx: number, trace?: traceFunc): void {
-        if (trace) trace(this.buffer);
+    private SiftUp(idx: number, trace?: traceFunc<T>): void {
+        if (trace) trace(this.m_buffer);
         while (idx > 0) {
             let parent = Math.floor((idx - 1) / 2);
-            if (this.buffer[parent] >= this.buffer[idx]) {
+            if (this.m_buffer[parent].greaterEq(this.m_buffer[idx])) {
                 return;
             }
-            [this.buffer[parent], this.buffer[idx]] = [this.buffer[idx], this.buffer[parent]];
+            [this.m_buffer[parent], this.m_buffer[idx]] = [this.m_buffer[idx], this.m_buffer[parent]];
             idx = parent;
-            if (trace) trace(this.buffer);
+            if (trace) trace(this.m_buffer);
         }
     }
 
-    Enqueue(item: number, trace?: traceFunc): void {
-        if (trace) trace(this.buffer);
+    Enqueue(item: T, trace?: traceFunc<T>): void {
+        if (trace) trace(this.m_buffer);
         this.buffer.push(item);
-        this.SiftUp(this.buffer.length - 1, trace);
+        this.SiftUp(this.m_buffer.length - 1, trace);
     }
 
-    Dequeue(trace?: traceFunc): number | null {
-        if (trace) trace(this.buffer);
+    Dequeue(trace?: traceFunc<T>): T | null {
+        if (trace) trace(this.m_buffer);
 
-        if (this.buffer.length === 0) {
+        if (this.m_buffer.length === 0) {
             return null;
         }
 
-        let result = this.buffer[0];
+        let result = this.m_buffer[0];
 
-        if (this.buffer.length === 1) {
-            this.buffer.pop();
-            if (trace) trace(this.buffer);
+        if (this.m_buffer.length === 1) {
+            this.m_buffer.pop();
+            if (trace) trace(this.m_buffer);
             return result;
         }
 
-        this.buffer[0] = this.buffer.pop()!;
+        this.m_buffer[0] = this.m_buffer.pop()!;
 
-        if (this.buffer.length > 0) {
+        if (this.m_buffer.length > 0) {
             this.SiftDown(0, trace);
         }
 
         return result;
     }
 
-    Peek(): number | null {
-        if (this.buffer.length === 0) {
+    Peek(): T | null {
+        if (this.m_buffer.length === 0) {
             return null;
         }
-        return this.buffer[0];
+        return this.m_buffer[0];
     }
 
-    GetBuffer(): number[] {
-        return this.buffer;
+    get buffer(): T[] {
+        return this.m_buffer;
     }
 }

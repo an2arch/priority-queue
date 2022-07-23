@@ -1,4 +1,5 @@
-import DecQueue from "./DecQueue.js";
+import QueueWidget from "./QueueWidget.js";
+import DrawableItem from "./DrawableItem.js";
 import { getCurrentTimeStr } from "./Utility.js";
 
 class HistoryContainer {
@@ -36,7 +37,7 @@ export default class FunctionsContainer {
         this.history = new HistoryContainer(storyDiv);
     }
 
-    link(queue: DecQueue): void {
+    link(queue: QueueWidget): void {
         this.addButton.onclick = () => {
             this.handleAddItem(queue);
         };
@@ -48,7 +49,7 @@ export default class FunctionsContainer {
         };
     }
 
-    handleAddItem(decQueue: DecQueue): void {
+    handleAddItem(queue: QueueWidget): void {
         if (!this.textBox.value) {
             this.textBox.style.borderColor = "#FF3030";
             return;
@@ -58,19 +59,21 @@ export default class FunctionsContainer {
         const item = parseFloat(this.textBox.value);
         if (!isNaN(item)) {
             this.textBox.value = "";
-            let trace = [];
-            decQueue.Enqueue(item, (s) => {
+            let trace: DrawableItem[][] = [];
+            queue.Enqueue(new DrawableItem(item), (s) => {
                 trace.push([...s]);
             });
+            console.log(trace);
             this.history.addToHistory(`add ${item}`);
         }
     }
 
-    handlePopItem(decQueue: DecQueue): void {
-        let trace = [];
-        let result = decQueue.Dequeue((s) => {
+    handlePopItem(queue: QueueWidget): void {
+        let trace: DrawableItem[][] = [];
+        let result = queue.Dequeue((s) => {
             trace.push([...s]);
         });
+        console.log(trace);
 
         if (result === null) {
             alert("There are no items in a queue");

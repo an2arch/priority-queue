@@ -1,3 +1,4 @@
+import DrawableItem from "./DrawableItem.js";
 import { getCurrentTimeStr } from "./Utility.js";
 class HistoryContainer {
     constructor(story) {
@@ -29,7 +30,7 @@ export default class FunctionsContainer {
                 this.handleAddItem(queue);
         };
     }
-    handleAddItem(decQueue) {
+    handleAddItem(queue) {
         if (!this.textBox.value) {
             this.textBox.style.borderColor = "#FF3030";
             return;
@@ -39,17 +40,19 @@ export default class FunctionsContainer {
         if (!isNaN(item)) {
             this.textBox.value = "";
             let trace = [];
-            decQueue.Enqueue(item, (s) => {
+            queue.Enqueue(new DrawableItem(item), (s) => {
                 trace.push([...s]);
             });
+            console.log(trace);
             this.history.addToHistory(`add ${item}`);
         }
     }
-    handlePopItem(decQueue) {
+    handlePopItem(queue) {
         let trace = [];
-        let result = decQueue.Dequeue((s) => {
+        let result = queue.Dequeue((s) => {
             trace.push([...s]);
         });
+        console.log(trace);
         if (result === null) {
             alert("There are no items in a queue");
             return;

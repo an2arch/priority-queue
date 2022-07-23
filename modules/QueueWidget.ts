@@ -1,6 +1,6 @@
 import DrawableItem from "./DrawableItem.js";
 import * as Utility from "./Utility.js";
-import DecQueue from "./DecQueue.js";
+import { DecQueue, traceFunc } from "./DecQueue.js";
 
 export default class QueueWidget {
     private readonly ITEM_SPACING_X: number = 40;
@@ -9,7 +9,8 @@ export default class QueueWidget {
     private currMatrix: DOMMatrix = new DOMMatrix();
     private scale: number = 1;
 
-    private items: DrawableItem[] = [];
+    // private items: DrawableItem[] = [];
+    private queue: DecQueue<DrawableItem> = new DecQueue<DrawableItem>();
 
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
@@ -99,12 +100,32 @@ export default class QueueWidget {
         );
     }
 
-    update(queue: DecQueue): void {
-        let levelCount = Math.floor(Math.log2(queue.GetBuffer().length));
-        this.items = [];
+    // TODO: need to do tracing here
+    Enqueue(item: DrawableItem, trace?: traceFunc<DrawableItem>) {
+        this.queue.Enqueue(item, trace);
+        this.update();
+        if (trace) {
+            trace(this.queue.buffer);
+        }
+    }
 
-        for (let i = 0; i < queue.GetBuffer().length; ++i) {
-            let newItem: DrawableItem = new DrawableItem(queue.GetBuffer()[i]);
+    // TODO: need to do tracing here
+    Dequeue(trace?: traceFunc<DrawableItem>) {
+        let result = this.queue.Dequeue(trace);
+        this.update();
+        if (trace) {
+            trace(this.queue.buffer);
+        }
+        return result;
+    }
+
+    update(): void {
+        let levelCount = Math.floor(Math.log2(this.queue.buffer.length));
+        let newItems = [];
+        // this.items = [];
+
+        for (let i = 0; i < this.queue.buffer.length; ++i) {
+            let newItem: DrawableItem = new DrawableItem(this.queue.buffer[i].priority);
 
             let levelCurrent = Math.floor(Math.log2(i + 1));
             let countChildren = Math.pow(2, levelCount - levelCurrent);
@@ -112,15 +133,16 @@ export default class QueueWidget {
             let y = this.canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50;
             let x =
                 i !== 0
-                    ? this.items[Math.ceil(i / 2) - 1].canvasPos.x -
+                    ? newItems[Math.ceil(i / 2) - 1].canvasPos.x -
                       Math.pow(-1, (i + 1) % 2) * this.ITEM_SPACING_X * countChildren
                     : this.ctx.canvas.width / 2;
 
             newItem.level = levelCurrent;
             newItem.canvasPos = { x, y };
 
-            this.items.push(newItem);
+            newItems.push(newItem);
         }
+        this.queue = new DecQueue<DrawableItem>(newItems);
     }
 
     render(): void {
@@ -162,13 +184,13 @@ export default class QueueWidget {
     }
 
     private drawItems() {
-        for (const [idx, item] of this.items.entries()) {
+        for (const [idx, item] of this.queue.buffer.entries()) {
             let parrent = Math.floor((idx - 1) / 2);
             if (parrent >= 0) {
-                item.drawLineToItem(this.ctx, this.items[parrent]);
+                item.drawLineToItem(this.ctx, this.queue.buffer[parrent]);
             }
         }
-        for (const item of this.items) {
+        for (const item of this.queue.buffer) {
             item.render(this.ctx);
         }
     }
