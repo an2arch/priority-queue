@@ -79,6 +79,6 @@ export default class FunctionsContainer {
             alert("There are no items in a queue");
             return;
         }
-        this.history.addToHistory(`pop ${result}`);
+        this.history.addToHistory(`pop ${result.priority}`);
     }
 }
