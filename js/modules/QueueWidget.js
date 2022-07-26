@@ -9,7 +9,6 @@ export default class QueueWidget {
         this.TRACE_INTERVAL = 0.5;
         this.currMatrix = new DOMMatrix();
         this.scale = 1;
-        // private items: DrawableItem[] = [];
         this.queue = new DecQueue();
         this.trace = [];
         this.traceTime = 0;
@@ -154,17 +153,18 @@ export default class QueueWidget {
     }
     drawItems(prevState, newState, t) {
         if (newState) {
+            let easeInOutQuart = (x) => (x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2);
             for (const item of prevState) {
                 let newItem = newState.find((i) => i.id === item.id);
                 if (newItem) {
                     let currentItem = new DrawableItem(item.priority);
                     DrawableItem.resetId();
-                    currentItem.canvasPos = Utility.lerpPoint(item.canvasPos, newItem.canvasPos, t * t);
+                    currentItem.canvasPos = Utility.lerpPoint(item.canvasPos, newItem.canvasPos, easeInOutQuart(t));
                     currentItem.id = item.id;
                     currentItem.render(this.ctx);
                 }
                 else {
-                    item.render(this.ctx, 1 - t);
+                    item.render(this.ctx, easeInOutQuart(1 - t));
                 }
             }
             for (const item of newState) {
@@ -172,7 +172,7 @@ export default class QueueWidget {
                     return i.id === item.id;
                 });
                 if (!newItem) {
-                    item.render(this.ctx, t);
+                    item.render(this.ctx, easeInOutQuart(t));
                 }
             }
         }
