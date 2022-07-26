@@ -11,9 +11,14 @@ let queueWidget = new QueueWidget(canvas);
 let funcContainer = new FunctionsContainer(addButton, popButton, textBox, story);
 
 funcContainer.link(queueWidget);
+let prevTime: DOMHighResTimeStamp | null = null;
 function loop(time: DOMHighResTimeStamp) {
-    queueWidget.update();
-    queueWidget.render();
+    if (prevTime) {
+        let deltaTime = (time - prevTime) * 0.001;
+        queueWidget.update(deltaTime);
+        queueWidget.render();
+    }
+    prevTime = time;
     window.requestAnimationFrame(loop);
 }
 

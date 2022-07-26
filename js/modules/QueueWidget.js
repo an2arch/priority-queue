@@ -6,10 +6,14 @@ export default class QueueWidget {
         this.ITEM_SPACING_X = 40;
         this.RESET_WIDTH = 110;
         this.RESET_HEIGTH = 30;
+        this.TRACE_INTERVAL = 0.5;
         this.currMatrix = new DOMMatrix();
         this.scale = 1;
         // private items: DrawableItem[] = [];
         this.queue = new DecQueue();
+        this.trace = [];
+        this.traceTime = 0;
+        this.drawing = false;
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
         this.initContext();
@@ -57,29 +61,39 @@ export default class QueueWidget {
             this.initContext();
         }, false);
     }
-    // TODO: need to do tracing here
-    Enqueue(item, trace) {
-        this.queue.Enqueue(item, trace);
-        this.update();
-        if (trace) {
-            trace(this.queue.buffer);
+    Enqueue(item) {
+        if (!this.drawing) {
+            this.drawing = true;
+            this.trace = [];
+            this.traceTime = 0;
+            let traceFunc = (s) => {
+                this.trace.push(this.updateItems(s));
+            };
+            this.queue.Enqueue(item, traceFunc);
+            this.queue = new DecQueue(this.updateItems(this.queue.buffer));
+            return true;
         }
+        return false;
     }
-    // TODO: need to do tracing here
-    Dequeue(trace) {
-        let result = this.queue.Dequeue(trace);
-        this.update();
-        if (trace) {
-            trace(this.queue.buffer);
+    Dequeue() {
+        if (!this.drawing) {
+            this.drawing = true;
+            this.trace = [];
+            this.traceTime = 0;
+            let traceFunc = (s) => {
+                this.trace.push(this.updateItems(s));
+            };
+            let result = this.queue.Dequeue(traceFunc);
+            this.queue = new DecQueue(this.updateItems(this.queue.buffer));
+            return result !== null && result !== void 0 ? result : true;
         }
-        return result;
+        return false;
     }
-    update() {
-        let levelCount = Math.floor(Math.log2(this.queue.buffer.length));
+    updateItems(items) {
+        let levelCount = Math.floor(Math.log2(items.length));
         let newItems = [];
-        // this.items = [];
-        for (let i = 0; i < this.queue.buffer.length; ++i) {
-            let newItem = new DrawableItem(this.queue.buffer[i].priority);
+        for (let i = 0; i < items.length; ++i) {
+            let newItem = new DrawableItem(items[i].priority);
             let levelCurrent = Math.floor(Math.log2(i + 1));
             let countChildren = Math.pow(2, levelCount - levelCurrent);
             let y = this.canvas.height / 2 - (levelCount * 50) / 2 + levelCurrent * 50;
@@ -89,16 +103,30 @@ export default class QueueWidget {
                 : this.ctx.canvas.width / 2;
             newItem.level = levelCurrent;
             newItem.canvasPos = { x, y };
+            newItem.id = items[i].id;
             newItems.push(newItem);
         }
-        this.queue = new DecQueue(newItems);
+        return newItems;
+    }
+    update(deltaTime) {
+        if (this.drawing) {
+            this.traceTime = this.traceTime + deltaTime;
+            if (this.traceTime >= (this.trace.length - 1) * this.TRACE_INTERVAL) {
+                this.traceTime = (this.trace.length - 1) * this.TRACE_INTERVAL;
+                this.drawing = false;
+            }
+        }
     }
     render() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.save();
-        this.ctx.setTransform(this.currMatrix);
-        this.drawItems();
-        this.ctx.restore();
+        if (this.trace.length > 0) {
+            let idx = Math.floor(this.traceTime / this.TRACE_INTERVAL);
+            let t = (this.traceTime % this.TRACE_INTERVAL) / this.TRACE_INTERVAL;
+            this.ctx.save();
+            this.ctx.setTransform(this.currMatrix);
+            this.drawItems(this.trace[idx], this.trace[idx + 1], t);
+            this.ctx.restore();
+        }
         this.drawResetButton();
     }
     initContext() {
@@ -124,15 +152,40 @@ export default class QueueWidget {
         this.canvas.height = canvas_height;
         this.canvas.style.display = savedDisplay;
     }
-    drawItems() {
-        for (const [idx, item] of this.queue.buffer.entries()) {
-            let parrent = Math.floor((idx - 1) / 2);
-            if (parrent >= 0) {
-                item.drawLineToItem(this.ctx, this.queue.buffer[parrent]);
+    drawItems(prevState, newState, t) {
+        if (newState) {
+            for (const item of prevState) {
+                let newItem = newState.find((i) => i.id === item.id);
+                if (newItem) {
+                    let currentItem = new DrawableItem(item.priority);
+                    DrawableItem.resetId();
+                    currentItem.canvasPos = Utility.lerpPoint(item.canvasPos, newItem.canvasPos, t * t);
+                    currentItem.id = item.id;
+                    currentItem.render(this.ctx);
+                }
+                else {
+                    item.render(this.ctx, 1 - t);
+                }
+            }
+            for (const item of newState) {
+                let newItem = prevState.find((i) => {
+                    return i.id === item.id;
+                });
+                if (!newItem) {
+                    item.render(this.ctx, t);
+                }
             }
         }
-        for (const item of this.queue.buffer) {
-            item.render(this.ctx);
+        else {
+            for (const [idx, item] of prevState.entries()) {
+                let parrent = Math.floor((idx - 1) / 2);
+                if (parrent >= 0) {
+                    item.drawLineToItem(this.ctx, this.queue.buffer[parrent]);
+                }
+            }
+            for (const item of prevState) {
+                item.render(this.ctx);
+            }
         }
     }
     drawResetButton() {

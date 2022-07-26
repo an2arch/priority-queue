@@ -1,3 +1,9 @@
+export function lerp(a, b, t) {
+    return a + (b - a) * t;
+}
+export function lerpPoint(a, b, t) {
+    return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) };
+}
 export function getPoint(canvas, point) {
     let rect = canvas.getBoundingClientRect(); // abs. size of element
     let scaleX = canvas.width / rect.width; // relationship bitmap vs. element for x

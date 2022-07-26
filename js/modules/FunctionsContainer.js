@@ -38,25 +38,20 @@ export default class FunctionsContainer {
         this.textBox.style.borderColor = "#000";
         const item = parseFloat(this.textBox.value);
         if (!isNaN(item)) {
-            this.textBox.value = "";
-            let trace = [];
-            queue.Enqueue(new DrawableItem(item), (s) => {
-                trace.push([...s]);
-            });
-            console.log(trace);
-            this.history.addToHistory(`add ${item}`);
+            if (queue.Enqueue(new DrawableItem(item))) {
+                this.textBox.value = "";
+                this.history.addToHistory(`add ${item}`);
+            }
         }
     }
     handlePopItem(queue) {
-        let trace = [];
-        let result = queue.Dequeue((s) => {
-            trace.push([...s]);
-        });
-        console.log(trace);
-        if (result === null) {
+        let result = queue.Dequeue();
+        if (result === true) {
             alert("There are no items in a queue");
             return;
         }
-        this.history.addToHistory(`pop ${result.priority}`);
+        if (result !== false) {
+            this.history.addToHistory(`pop ${result.priority}`);
+        }
     }
 }

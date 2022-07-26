@@ -58,27 +58,23 @@ export default class FunctionsContainer {
 
         const item = parseFloat(this.textBox.value);
         if (!isNaN(item)) {
-            this.textBox.value = "";
-            let trace: DrawableItem[][] = [];
-            queue.Enqueue(new DrawableItem(item), (s) => {
-                trace.push([...s]);
-            });
-            console.log(trace);
-            this.history.addToHistory(`add ${item}`);
+            if (queue.Enqueue(new DrawableItem(item))) {
+                this.textBox.value = "";
+                this.history.addToHistory(`add ${item}`);
+            }
         }
     }
 
     handlePopItem(queue: QueueWidget): void {
-        let trace: DrawableItem[][] = [];
-        let result = queue.Dequeue((s) => {
-            trace.push([...s]);
-        });
-        console.log(trace);
+        let result = queue.Dequeue();
 
-        if (result === null) {
+        if (result === true) {
             alert("There are no items in a queue");
             return;
         }
-        this.history.addToHistory(`pop ${result.priority}`);
+
+        if (result !== false) {
+            this.history.addToHistory(`pop ${result.priority}`);
+        }
     }
 }

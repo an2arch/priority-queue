@@ -1,6 +1,14 @@
 export type HexColor = `#${string}`;
 export type Point = { x: number; y: number };
 
+export function lerp(a: number, b: number, t: number): number {
+    return a + (b - a) * t;
+}
+
+export function lerpPoint(a: Point, b: Point, t: number): Point {
+    return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) };
+}
+
 export function getPoint(canvas: HTMLCanvasElement, point: Point): Point {
     let rect: DOMRect = canvas.getBoundingClientRect(); // abs. size of element
     let scaleX: number = canvas.width / rect.width; // relationship bitmap vs. element for x
