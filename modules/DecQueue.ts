@@ -14,6 +14,10 @@ export class DecQueue<T extends Item> {
         }
     }
 
+    clone(): DecQueue<T> {
+        return new DecQueue<T>([...this.m_buffer]);
+    }
+
     private SiftDown(idx: number, trace?: traceFunc<T>): void {
         if (trace) trace(this.m_buffer);
         while (2 * idx + 1 < this.m_buffer.length) {

@@ -8,6 +8,9 @@ export class DecQueue {
             }
         }
     }
+    clone() {
+        return new DecQueue([...this.m_buffer]);
+    }
     SiftDown(idx, trace) {
         if (trace)
             trace(this.m_buffer);

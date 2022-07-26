@@ -5,8 +5,9 @@ const story = document.getElementById("overflow");
 const textBox = document.getElementById("text-box");
 const addButton = document.getElementById("add-button");
 const popButton = document.getElementById("pop-button");
+const undoButton = document.getElementById("undo-button");
 let queueWidget = new QueueWidget(canvas);
-let funcContainer = new FunctionsContainer(addButton, popButton, textBox, story);
+let funcContainer = new FunctionsContainer(addButton, popButton, undoButton, textBox, story);
 funcContainer.link(queueWidget);
 let prevTime = null;
 function loop(time) {

@@ -2,6 +2,15 @@ import DrawableItem from "./DrawableItem.js";
 import * as Utility from "./Utility.js";
 import { DecQueue } from "./DecQueue.js";
 
+class Snapshot {
+    trace: DrawableItem[][];
+    queue: DecQueue<DrawableItem>;
+    constructor(trace: DrawableItem[][], queue: DecQueue<DrawableItem>) {
+        this.trace = trace;
+        this.queue = queue;
+    }
+}
+
 export default class QueueWidget {
     private readonly ITEM_SPACING_X: number = 40;
     private readonly RESET_WIDTH: number = 110;
@@ -10,6 +19,7 @@ export default class QueueWidget {
     private currMatrix: DOMMatrix = new DOMMatrix();
     private scale: number = 1;
 
+    private history: Snapshot[] = [];
     private queue: DecQueue<DrawableItem> = new DecQueue<DrawableItem>();
     private trace: DrawableItem[][] = [];
     private traceTime: number = 0;
@@ -105,6 +115,7 @@ export default class QueueWidget {
 
     Enqueue(item: DrawableItem) {
         if (!this.drawing) {
+            this.history.push(this.save());
             this.drawing = true;
             this.trace = [];
             this.traceTime = 0;
@@ -121,6 +132,7 @@ export default class QueueWidget {
     Dequeue() {
         if (!this.drawing) {
             this.drawing = true;
+            this.history.push(this.save());
             this.trace = [];
             this.traceTime = 0;
             let traceFunc = (s: DrawableItem[]) => {
@@ -129,6 +141,24 @@ export default class QueueWidget {
             let result = this.queue.Dequeue(traceFunc);
             this.queue = new DecQueue(this.updateItems(this.queue.buffer));
             return result ?? true;
+        }
+        return false;
+    }
+
+    private save(): Snapshot {
+        return new Snapshot([...this.trace], this.queue.clone());
+    }
+
+    private restore(s: Snapshot): void {
+        this.trace = [...s.trace];
+        this.queue = s.queue.clone();
+        this.traceTime = (this.trace.length - 1) * this.TRACE_INTERVAL;
+    }
+
+    undo(): boolean {
+        if (!this.drawing && this.history.length > 0) {
+            this.restore(this.history.pop()!);
+            return true;
         }
         return false;
     }
@@ -239,7 +269,7 @@ export default class QueueWidget {
             for (const [idx, item] of prevState.entries()) {
                 let parrent = Math.floor((idx - 1) / 2);
                 if (parrent >= 0) {
-                    item.drawLineToItem(this.ctx, this.queue.buffer[parrent]);
+                    item.drawLineToItem(this.ctx, prevState[parrent]);
                 }
             }
             for (const item of prevState) {

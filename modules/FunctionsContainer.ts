@@ -4,11 +4,18 @@ import { getCurrentTimeStr } from "./Utility.js";
 
 class HistoryContainer {
     private story: HTMLDivElement;
+
     constructor(story: HTMLDivElement) {
         this.story = story;
     }
 
-    addToHistory(message: string): void {
+    delete(): void {
+        if (this.story.children.length > 0) {
+            this.story.children[0].remove();
+        }
+    }
+
+    add(message: string): void {
         this.story.insertAdjacentHTML(
             "afterbegin",
             `<div class="info-container">
@@ -20,19 +27,22 @@ class HistoryContainer {
 }
 
 export default class FunctionsContainer {
-    private addButton: HTMLDivElement;
-    private popButton: HTMLDivElement;
+    private addButton: HTMLButtonElement;
+    private popButton: HTMLButtonElement;
+    private undoButton: HTMLButtonElement;
     private textBox: HTMLInputElement;
     private history: HistoryContainer;
 
     constructor(
-        addButton: HTMLDivElement,
-        popButton: HTMLDivElement,
+        addButton: HTMLButtonElement,
+        popButton: HTMLButtonElement,
+        undoButton: HTMLButtonElement,
         textBox: HTMLInputElement,
         storyDiv: HTMLDivElement
     ) {
         this.addButton = addButton;
         this.popButton = popButton;
+        this.undoButton = undoButton;
         this.textBox = textBox;
         this.history = new HistoryContainer(storyDiv);
     }
@@ -41,11 +51,19 @@ export default class FunctionsContainer {
         this.addButton.onclick = () => {
             this.handleAddItem(queue);
         };
+
         this.popButton.onclick = () => {
             this.handlePopItem(queue);
         };
+
         this.textBox.onkeydown = (e) => {
             if (e.key === "Enter") this.handleAddItem(queue);
+        };
+
+        this.undoButton.onclick = () => {
+            if (queue.undo()) {
+                this.history.delete();
+            }
         };
     }
 
@@ -60,7 +78,7 @@ export default class FunctionsContainer {
         if (!isNaN(item)) {
             if (queue.Enqueue(new DrawableItem(item))) {
                 this.textBox.value = "";
-                this.history.addToHistory(`add ${item}`);
+                this.history.add(`add ${item}`);
             }
         }
     }
@@ -74,7 +92,7 @@ export default class FunctionsContainer {
         }
 
         if (result !== false) {
-            this.history.addToHistory(`pop ${result.priority}`);
+            this.history.add(`pop ${result.priority}`);
         }
     }
 }

@@ -4,7 +4,12 @@ class HistoryContainer {
     constructor(story) {
         this.story = story;
     }
-    addToHistory(message) {
+    delete() {
+        if (this.story.children.length > 0) {
+            this.story.children[0].remove();
+        }
+    }
+    add(message) {
         this.story.insertAdjacentHTML("afterbegin", `<div class="info-container">
             <div class="messages">${message}</div>
             <div class="time">${getCurrentTimeStr()}</div>
@@ -12,9 +17,10 @@ class HistoryContainer {
     }
 }
 export default class FunctionsContainer {
-    constructor(addButton, popButton, textBox, storyDiv) {
+    constructor(addButton, popButton, undoButton, textBox, storyDiv) {
         this.addButton = addButton;
         this.popButton = popButton;
+        this.undoButton = undoButton;
         this.textBox = textBox;
         this.history = new HistoryContainer(storyDiv);
     }
@@ -29,6 +35,11 @@ export default class FunctionsContainer {
             if (e.key === "Enter")
                 this.handleAddItem(queue);
         };
+        this.undoButton.onclick = () => {
+            if (queue.undo()) {
+                this.history.delete();
+            }
+        };
     }
     handleAddItem(queue) {
         if (!this.textBox.value) {
@@ -40,7 +51,7 @@ export default class FunctionsContainer {
         if (!isNaN(item)) {
             if (queue.Enqueue(new DrawableItem(item))) {
                 this.textBox.value = "";
-                this.history.addToHistory(`add ${item}`);
+                this.history.add(`add ${item}`);
             }
         }
     }
@@ -51,7 +62,7 @@ export default class FunctionsContainer {
             return;
         }
         if (result !== false) {
-            this.history.addToHistory(`pop ${result.priority}`);
+            this.history.add(`pop ${result.priority}`);
         }
     }
 }

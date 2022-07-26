@@ -166,6 +166,21 @@
     background-color: #70dbb8;
 }
 
+#undo-button {
+    position: absolute;
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    -webkit-transition: 0.1s;
+    -o-transition: 0.1s;
+    transition: 0.1s;
+}
+
+#undo-button:hover {
+    color: #570010;
+}
+
 #history-container {
     overflow: auto;
     display: -ms-flexbox;
@@ -189,6 +204,7 @@
     font-size: 1em;
     text-decoration: none;
 }
+
 
 #history-container #headers {
     font-weight: bold;

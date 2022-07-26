@@ -1,6 +1,12 @@
 import DrawableItem from "./DrawableItem.js";
 import * as Utility from "./Utility.js";
 import { DecQueue } from "./DecQueue.js";
+class Snapshot {
+    constructor(trace, queue) {
+        this.trace = trace;
+        this.queue = queue;
+    }
+}
 export default class QueueWidget {
     constructor(canvas) {
         this.ITEM_SPACING_X = 40;
@@ -9,6 +15,7 @@ export default class QueueWidget {
         this.TRACE_INTERVAL = 0.5;
         this.currMatrix = new DOMMatrix();
         this.scale = 1;
+        this.history = [];
         this.queue = new DecQueue();
         this.trace = [];
         this.traceTime = 0;
@@ -62,6 +69,7 @@ export default class QueueWidget {
     }
     Enqueue(item) {
         if (!this.drawing) {
+            this.history.push(this.save());
             this.drawing = true;
             this.trace = [];
             this.traceTime = 0;
@@ -77,6 +85,7 @@ export default class QueueWidget {
     Dequeue() {
         if (!this.drawing) {
             this.drawing = true;
+            this.history.push(this.save());
             this.trace = [];
             this.traceTime = 0;
             let traceFunc = (s) => {
@@ -85,6 +94,21 @@ export default class QueueWidget {
             let result = this.queue.Dequeue(traceFunc);
             this.queue = new DecQueue(this.updateItems(this.queue.buffer));
             return result !== null && result !== void 0 ? result : true;
+        }
+        return false;
+    }
+    save() {
+        return new Snapshot([...this.trace], this.queue.clone());
+    }
+    restore(s) {
+        this.trace = [...s.trace];
+        this.queue = s.queue.clone();
+        this.traceTime = (this.trace.length - 1) * this.TRACE_INTERVAL;
+    }
+    undo() {
+        if (!this.drawing && this.history.length > 0) {
+            this.restore(this.history.pop());
+            return true;
         }
         return false;
     }
@@ -180,7 +204,7 @@ export default class QueueWidget {
             for (const [idx, item] of prevState.entries()) {
                 let parrent = Math.floor((idx - 1) / 2);
                 if (parrent >= 0) {
-                    item.drawLineToItem(this.ctx, this.queue.buffer[parrent]);
+                    item.drawLineToItem(this.ctx, prevState[parrent]);
                 }
             }
             for (const item of prevState) {
