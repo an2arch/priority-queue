@@ -65,6 +65,10 @@ export default class QueueWidget {
         window.addEventListener("resize", () => {
             this.updateSizes();
             this.initContext();
+            for (let i = 0; i < this.trace.length; ++i) {
+                this.trace[i] = this.updateItems(this.trace[i]);
+            }
+            console.log(this.trace);
         }, false);
     }
     Enqueue(item) {
