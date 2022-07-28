@@ -1,6 +1,10 @@
 export type HexColor = `#${string}`;
 export type Point = { x: number; y: number };
 
+export function clamp(x: number, min: number, max: number): number {
+    return Math.max(min, Math.min(x, max));
+}
+
 export function lerp(a: number, b: number, t: number): number {
     return a + (b - a) * t;
 }

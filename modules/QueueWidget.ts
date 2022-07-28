@@ -12,10 +12,10 @@ class Snapshot {
 }
 
 export default class QueueWidget {
-    private readonly ITEM_SPACING_X: number = 40;
-    private readonly RESET_WIDTH: number = 110;
-    private readonly RESET_HEIGTH: number = 30;
-    private readonly TRACE_INTERVAL: number = 0.5;
+    private static readonly ITEM_SPACING_X: number = 40;
+    private static readonly RESET_WIDTH: number = 110;
+    private static readonly RESET_HEIGTH: number = 30;
+
     private currMatrix: DOMMatrix = new DOMMatrix();
     private scale: number = 1;
 
@@ -23,6 +23,7 @@ export default class QueueWidget {
     private queue: DecQueue<DrawableItem> = new DecQueue<DrawableItem>();
     private trace: DrawableItem[][] = [];
     private traceTime: number = 0;
+    private m_traceInterval: number = 0.5;
     private drawing: boolean = false;
 
     private canvas: HTMLCanvasElement;
@@ -40,12 +41,12 @@ export default class QueueWidget {
         };
 
         this.canvas.onmousemove = (e: MouseEvent) => {
-            let resetPos: Utility.Point = { x: this.canvas.width - this.RESET_WIDTH, y: 0 };
+            let resetPos: Utility.Point = { x: this.canvas.width - QueueWidget.RESET_WIDTH, y: 0 };
             if (
                 Utility.rectContainPoint(
                     resetPos,
-                    this.RESET_WIDTH,
-                    this.RESET_HEIGTH,
+                    QueueWidget.RESET_WIDTH,
+                    QueueWidget.RESET_HEIGTH,
                     Utility.getPoint(this.canvas, { x: e.clientX, y: e.clientY })
                 )
             ) {
@@ -58,12 +59,12 @@ export default class QueueWidget {
         let savedOnMouseMove = this.canvas.onmousemove;
 
         this.canvas.onmousedown = (e: MouseEvent) => {
-            let resetPos: Utility.Point = { x: this.canvas.width - this.RESET_WIDTH, y: 0 };
+            let resetPos: Utility.Point = { x: this.canvas.width - QueueWidget.RESET_WIDTH, y: 0 };
             if (
                 Utility.rectContainPoint(
                     resetPos,
-                    this.RESET_WIDTH,
-                    this.RESET_HEIGTH,
+                    QueueWidget.RESET_WIDTH,
+                    QueueWidget.RESET_HEIGTH,
                     Utility.getPoint(this.canvas, { x: e.clientX, y: e.clientY })
                 )
             ) {
@@ -111,7 +112,6 @@ export default class QueueWidget {
                 for (let i = 0; i < this.trace.length; ++i) {
                     this.trace[i] = this.updateItems(this.trace[i]);
                 }
-                console.log(this.trace);
             },
             false
         );
@@ -149,6 +149,12 @@ export default class QueueWidget {
         return false;
     }
 
+    set traceInterval(newTraceInterval: number) {
+        let savedTraceInterval = this.m_traceInterval;
+        this.m_traceInterval = newTraceInterval;
+        this.traceTime *= newTraceInterval / savedTraceInterval;
+    }
+
     private save(): Snapshot {
         return new Snapshot([...this.trace], this.queue.clone());
     }
@@ -156,7 +162,7 @@ export default class QueueWidget {
     private restore(s: Snapshot): void {
         this.trace = [...s.trace];
         this.queue = s.queue.clone();
-        this.traceTime = (this.trace.length - 1) * this.TRACE_INTERVAL;
+        this.traceTime = (this.trace.length - 1) * this.m_traceInterval;
     }
 
     undo(): boolean {
@@ -181,7 +187,7 @@ export default class QueueWidget {
             let x =
                 i !== 0
                     ? newItems[Math.ceil(i / 2) - 1].canvasPos.x -
-                      Math.pow(-1, (i + 1) % 2) * this.ITEM_SPACING_X * countChildren
+                      Math.pow(-1, (i + 1) % 2) * QueueWidget.ITEM_SPACING_X * countChildren
                     : this.ctx.canvas.width / 2;
 
             newItem.level = levelCurrent;
@@ -196,8 +202,8 @@ export default class QueueWidget {
     update(deltaTime: number): void {
         if (this.drawing) {
             this.traceTime = this.traceTime + deltaTime;
-            if (this.traceTime >= (this.trace.length - 1) * this.TRACE_INTERVAL) {
-                this.traceTime = (this.trace.length - 1) * this.TRACE_INTERVAL;
+            if (this.traceTime >= (this.trace.length - 1) * this.m_traceInterval) {
+                this.traceTime = (this.trace.length - 1) * this.m_traceInterval;
                 this.drawing = false;
             }
         }
@@ -206,8 +212,8 @@ export default class QueueWidget {
     render(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         if (this.trace.length > 0) {
-            let idx = Math.floor(this.traceTime / this.TRACE_INTERVAL);
-            let t = (this.traceTime % this.TRACE_INTERVAL) / this.TRACE_INTERVAL;
+            let idx = Math.floor(this.traceTime / this.m_traceInterval);
+            let t = (this.traceTime % this.m_traceInterval) / this.m_traceInterval;
             this.ctx.save();
             this.ctx.setTransform(this.currMatrix);
             this.drawItems(this.trace[idx], this.trace[idx + 1], t);
@@ -284,15 +290,15 @@ export default class QueueWidget {
 
     private drawResetButton() {
         this.ctx.fillStyle = "#FFF";
-        let resetPos: Utility.Point = { x: this.ctx.canvas.width - this.RESET_WIDTH, y: 0 };
-        this.ctx.fillRect(resetPos.x, resetPos.y, this.RESET_WIDTH, this.RESET_HEIGTH);
-        this.ctx.strokeRect(resetPos.x, resetPos.y, this.RESET_WIDTH, this.RESET_HEIGTH);
+        let resetPos: Utility.Point = { x: this.ctx.canvas.width - QueueWidget.RESET_WIDTH, y: 0 };
+        this.ctx.fillRect(resetPos.x, resetPos.y, QueueWidget.RESET_WIDTH, QueueWidget.RESET_HEIGTH);
+        this.ctx.strokeRect(resetPos.x, resetPos.y, QueueWidget.RESET_WIDTH, QueueWidget.RESET_HEIGTH);
 
         let text: string = "Reset view";
         let textWidth: number = this.ctx.measureText(text).width;
         this.ctx.fillStyle = "#0f4844";
         this.ctx.textBaseline = "middle";
-        this.ctx.fillText(text, resetPos.x + (this.RESET_WIDTH - textWidth) / 2, this.RESET_HEIGTH / 2);
+        this.ctx.fillText(text, resetPos.x + (QueueWidget.RESET_WIDTH - textWidth) / 2, QueueWidget.RESET_HEIGTH / 2);
     }
 
     private handleScale(scaleMult: number, zoom: boolean, origin: Utility.Point) {
