@@ -28,13 +28,12 @@ class HistoryContainer {
 
 class Slider {
     static readonly MIN_VALUE: number = 0.1;
-    static readonly MAX_VALUE: number = 2.0;
+    static readonly MAX_VALUE: number = 1.0;
     static readonly STEP: number = 0.1;
-    static readonly INIT_VALUE: number = 1.0;
+    static readonly INIT_VALUE: number = 0.5;
 
     private slider: HTMLInputElement;
     private indicator: HTMLInputElement;
-
     oninput: ((ev: Event) => any) | null = null;
 
     constructor(slider: HTMLInputElement, indicator: HTMLInputElement) {
@@ -139,6 +138,8 @@ export default class FunctionsContainer {
                 this.history.delete();
             }
         };
+
+        queue.traceInterval = (Slider.MIN_VALUE * Slider.MAX_VALUE) / this.slider.value;
 
         this.slider.oninput = () => {
             queue.traceInterval = (Slider.MIN_VALUE * Slider.MAX_VALUE) / this.slider.value;

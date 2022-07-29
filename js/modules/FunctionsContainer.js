@@ -66,9 +66,9 @@ class Slider {
     }
 }
 Slider.MIN_VALUE = 0.1;
-Slider.MAX_VALUE = 2.0;
+Slider.MAX_VALUE = 1.0;
 Slider.STEP = 0.1;
-Slider.INIT_VALUE = 1.0;
+Slider.INIT_VALUE = 0.5;
 export default class FunctionsContainer {
     constructor(addButton, popButton, undoButton, textBox, storyDiv, sliderInput, indicatorInput) {
         this.addButton = addButton;
@@ -94,6 +94,7 @@ export default class FunctionsContainer {
                 this.history.delete();
             }
         };
+        queue.traceInterval = (Slider.MIN_VALUE * Slider.MAX_VALUE) / this.slider.value;
         this.slider.oninput = () => {
             queue.traceInterval = (Slider.MIN_VALUE * Slider.MAX_VALUE) / this.slider.value;
         };

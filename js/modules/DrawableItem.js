@@ -2,14 +2,10 @@ import * as Utility from "./Utility.js";
 import Item from "./Item.js";
 export default class DrawableItem extends Item {
     constructor(value) {
-        // , level: number, pos: Utility.Point) {
         super(value);
         this.level = -1;
         this.canvasPos = { x: 0, y: 0 };
         this.id = DrawableItem.ID_GENERATOR++;
-        // this.value = value;
-        // this.level = level;
-        // this.canvasPos = pos;
     }
     static resetId() {
         DrawableItem.ID_GENERATOR--;

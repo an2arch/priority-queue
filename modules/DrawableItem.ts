@@ -7,18 +7,13 @@ export default class DrawableItem extends Item {
     private static readonly LINE_COLOR: Utility.HexColor = "#0F4844";
     private static readonly BOX_PADDING: number = 10;
     private static ID_GENERATOR: number = 0;
-    // value: number;
     id: number;
     level: number = -1;
     canvasPos: Utility.Point = { x: 0, y: 0 };
 
     constructor(value: number) {
-        // , level: number, pos: Utility.Point) {
         super(value);
         this.id = DrawableItem.ID_GENERATOR++;
-        // this.value = value;
-        // this.level = level;
-        // this.canvasPos = pos;
     }
 
     static resetId(): void {
