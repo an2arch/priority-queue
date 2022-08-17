@@ -2,6 +2,9 @@ export default class Item {
     constructor(priority) {
         this.priority = priority;
     }
+    static resetId() {
+        Item.ID_GENERATOR--;
+    }
     less(other) {
         return this.priority < other.priority;
     }
@@ -15,3 +18,4 @@ export default class Item {
         return this.priority >= other.priority;
     }
 }
+Item.ID_GENERATOR = 0;

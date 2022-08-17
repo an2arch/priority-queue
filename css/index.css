@@ -45,8 +45,9 @@ input[type=number] {
     min-width: 350px;
 }
 
-#canvas {
+.canvas {
     border: 1px solid #000;
+    border-radius: 10px;
 }
 
 #functions-container {
@@ -75,6 +76,25 @@ input[type=number] {
 
     font-weight: bolder;
     font-size: 1.2em;
+}
+
+#current-queue{
+    height: 7%;
+    width: 100%;
+
+    margin: 10px 0px;
+    padding: 10px 30px;
+    position: relative;
+    border-bottom: 1px solid #000;
+    outline: none;
+    display: inline-block;
+
+    overflow-x: auto;
+
+}
+
+#current-queue::-webkit-scrollbar {
+    display: none;
 }
 
 #text-box:focus::-webkit-input-placeholder {

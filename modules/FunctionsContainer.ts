@@ -1,6 +1,7 @@
 import QueueWidget from "./QueueWidget.js";
 import DrawableItem from "./DrawableItem.js";
 import { getCurrentTimeStr, clamp } from "./Utility.js";
+import {DecQueue} from "./DecQueue";
 
 class HistoryContainer {
     private story: HTMLDivElement;
@@ -110,7 +111,7 @@ export default class FunctionsContainer {
         textBox: HTMLInputElement,
         storyDiv: HTMLDivElement,
         sliderInput: HTMLInputElement,
-        indicatorInput: HTMLInputElement
+        indicatorInput: HTMLInputElement,
     ) {
         this.addButton = addButton;
         this.popButton = popButton;

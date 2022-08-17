@@ -1,33 +1,45 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-        <link rel="stylesheet" href="css/reset.css" type="text/css" />
-        <link rel="stylesheet" href="css/index.css" type="text/css" />
-        <title>Priority Queue</title>
-    </head>
-    <body>
-        <div id="app-container">
-            <canvas id="canvas"></canvas> 
-            <div id="functions-container">
-                <input id="text-box" type="number" placeholder="Enter item value">
-                <button id="add-button" class="button-entry">ADD ITEM</button>
-                <button id="pop-button" class="button-entry">POP ITEM</button>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preload" href="fonts/OpenSans.ttf" as="font" type="font/ttf">
+    <link rel="stylesheet" href="css/reset.css" type="text/css" />
+    <link rel="stylesheet" href="css/index.css" type="text/css" />
+    <title>Priority Queue</title>
 
-                <!-- <p id="story" style="height: 30%" class="story-container"></p> -->
-                <div id="history-container">
-                    <div id="headers">
-                        <p class="sub-header" style="flex: 0 0 80%;">Action</p>
-                        <p class="sub-header" style="flex: 0 0 20%;align-items: start;display: flex;font-size: 16px">Time</p>
-                    </div>
-                    <div id="overflow">
-                    </div>
-                </div>
+</head>
+<body>
+<div id="app-container">
+    <div id="canvas-container" style="display: inline-block;vertical-align: middle;">
+        <canvas id="canvas" class="canvas"></canvas>
+        <canvas id="canvasInsideView" class="canvas"></canvas>
+    </div>
+
+    <div id="functions-container">
+        <input id="text-box" type="number" placeholder="Enter item value">
+        <button id="add-button" class="button-entry">ADD ITEM</button>
+        <button id="pop-button" class="button-entry">POP ITEM</button>
+
+        <div id="history-container">
+            <div id="headers">
+                <button id="undo-button">&#9100;</button>
+                <p class="sub-header" style="flex: 80%">Action</p>
+                <p class="sub-header" style="flex: 20%">Time</p>
             </div>
+
+            <div id="overflow"></div>
         </div>
 
-        <script charset="utf-8" src="index.js"></script>
-    </body>
+        <div id="slider-container">
+            <p id="label">Animation speed</p>
+            <input id="slider" type="range">
+            <input id="indicator" type="number" readonly>
+        </div>
+    </div>
+
+    <script type="module" charset="utf-8" src="js/index.js"></script>
+</div>
+</body>
 </html>

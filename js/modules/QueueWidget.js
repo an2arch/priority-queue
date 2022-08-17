@@ -7,9 +7,25 @@ class Snapshot {
         this.queue = queue;
     }
 }
+class CurrentQueue {
+    constructor(currentQueue) {
+        this.currentQueue = currentQueue;
+    }
+    clear() {
+        let deleteElements = this.currentQueue.querySelectorAll('span');
+        deleteElements.forEach(element => element.remove());
+    }
+    update(elements) {
+        this.clear();
+        elements.buffer.forEach(element => {
+            this.currentQueue.insertAdjacentHTML('afterbegin', `<span>${element}</span> `);
+        });
+    }
+}
 export default class QueueWidget {
-    constructor(canvas) {
+    constructor(canvas, canvasInsideView) {
         this.currMatrix = new DOMMatrix();
+        this.currMatrixInsideView = new DOMMatrix();
         this.scale = 1;
         this.history = [];
         this.queue = new DecQueue();
@@ -18,7 +34,9 @@ export default class QueueWidget {
         this.m_traceInterval = 0.5;
         this.drawing = false;
         this.canvas = canvas;
+        this.canvasInsideView = canvasInsideView;
         this.ctx = this.canvas.getContext("2d");
+        this.ctxInsideView = this.canvasInsideView.getContext("2d");
         this.initContext();
         this.updateSizes();
         this.canvas.onwheel = (e) => {
@@ -66,6 +84,11 @@ export default class QueueWidget {
                 this.trace[i] = this.updateItems(this.trace[i]);
             }
         }, false);
+        this.canvasInsideView.onwheel = (e) => {
+            let browserScale = window.devicePixelRatio;
+            let offsetY = e.clientY;
+            this.currMatrixInsideView.translateSelf(offsetY / e.deltaY * browserScale, 0);
+        };
     }
     Enqueue(item) {
         if (!this.drawing) {
@@ -120,6 +143,7 @@ export default class QueueWidget {
     updateItems(items) {
         let levelCount = Math.floor(Math.log2(items.length));
         let newItems = [];
+        let step = 20;
         for (let i = 0; i < items.length; ++i) {
             let newItem = new DrawableItem(items[i].priority);
             let levelCurrent = Math.floor(Math.log2(i + 1));
@@ -129,8 +153,12 @@ export default class QueueWidget {
                 ? newItems[Math.ceil(i / 2) - 1].canvasPos.x -
                     Math.pow(-1, (i + 1) % 2) * QueueWidget.ITEM_SPACING_X * countChildren
                 : this.ctx.canvas.width / 2;
+            let yStr = this.canvasInsideView.height / 2;
+            let xStr = step;
+            step += this.ctxInsideView.measureText(newItem.priority.toString()).width + 20;
             newItem.level = levelCurrent;
             newItem.canvasPos = { x, y };
+            newItem.canvasPosStr = { x: xStr, y: yStr };
             newItem.id = items[i].id;
             newItems.push(newItem);
         }
@@ -145,40 +173,92 @@ export default class QueueWidget {
             }
         }
     }
+    drawInsideViewTitle() {
+        let title = 'Inside View';
+        let titleLength = this.ctxInsideView.measureText(title).width;
+        this.ctxInsideView.fillText(title, this.canvasInsideView.width / 2 - titleLength, 10);
+    }
     render() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctxInsideView.clearRect(0, 0, this.canvasInsideView.width, this.canvasInsideView.height);
         if (this.trace.length > 0) {
             let idx = Math.floor(this.traceTime / this.m_traceInterval);
             let t = (this.traceTime % this.m_traceInterval) / this.m_traceInterval;
             this.ctx.save();
+            this.ctxInsideView.save();
             this.ctx.setTransform(this.currMatrix);
+            this.ctxInsideView.setTransform(this.currMatrixInsideView);
             this.drawItems(this.trace[idx], this.trace[idx + 1], t);
+            this.drawItemsStr(this.trace[idx], this.trace[idx + 1], t);
             this.ctx.restore();
+            this.ctxInsideView.restore();
         }
+        this.drawInsideViewTitle();
         this.drawResetButton();
     }
     initContext() {
         this.ctx.font = "bold 18px OpenSans";
         this.ctx.textBaseline = "middle";
         this.ctx.resetTransform();
+        this.ctxInsideView.font = "bold 18px OpenSans";
+        this.ctxInsideView.textBaseline = "middle";
+        this.ctxInsideView.resetTransform();
     }
     updateSizes() {
         let container = this.canvas.parentElement || document.documentElement;
         let savedDisplay = this.canvas.style.display;
         this.canvas.style.display = "none";
+        let savedDisplayInsideView = this.canvasInsideView.style.display;
+        this.canvasInsideView.style.display = "none";
         let rect = container.getBoundingClientRect();
         let container_height = rect.height;
         let container_width = rect.width;
         let ratio = 4 / 3;
-        let canvas_height = container_height;
-        let canvas_width = canvas_height * ratio;
+        let canvas_height = container_height * 9 / 10;
+        let canvas_width = container_width;
         if (canvas_width > container_width) {
             canvas_width = container_width;
-            canvas_height = canvas_width / ratio;
+            canvas_height = canvas_width / ratio * 9 / 10;
         }
+        let canvasInsideView_height = container_height / 11;
+        let canvasInsideView_width = canvas_width;
         this.canvas.width = canvas_width;
         this.canvas.height = canvas_height;
         this.canvas.style.display = savedDisplay;
+        this.canvasInsideView.width = canvasInsideView_width;
+        this.canvasInsideView.height = canvasInsideView_height;
+        this.canvasInsideView.style.display = savedDisplayInsideView;
+    }
+    drawItemsStr(prevState, newState, t) {
+        if (newState) {
+            let easeInOutQuart = (x) => (x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2);
+            for (const item of prevState) {
+                let newItem = newState.find((i) => i.id === item.id);
+                if (newItem) {
+                    let currentItem = new DrawableItem(item.priority);
+                    DrawableItem.resetId();
+                    currentItem.canvasPosStr = Utility.lerpPoint(item.canvasPosStr, newItem.canvasPosStr, easeInOutQuart(t));
+                    currentItem.id = item.id;
+                    currentItem.stringRender(this.ctxInsideView);
+                }
+                else {
+                    item.stringRender(this.ctxInsideView, easeInOutQuart(1 - t));
+                }
+            }
+            for (const item of newState) {
+                let newItem = prevState.find((i) => {
+                    return i.id === item.id;
+                });
+                if (!newItem) {
+                    item.stringRender(this.ctxInsideView, easeInOutQuart(t));
+                }
+            }
+        }
+        else {
+            for (const item of prevState) {
+                item.stringRender(this.ctxInsideView);
+            }
+        }
     }
     drawItems(prevState, newState, t) {
         if (newState) {
@@ -242,3 +322,5 @@ export default class QueueWidget {
 QueueWidget.ITEM_SPACING_X = 40;
 QueueWidget.RESET_WIDTH = 110;
 QueueWidget.RESET_HEIGTH = 30;
+QueueWidget.TITLE_WIDTH = 330;
+QueueWidget.TITLE_HEIGHT = 90;

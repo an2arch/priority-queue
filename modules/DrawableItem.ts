@@ -6,19 +6,17 @@ export default class DrawableItem extends Item {
     private static readonly TEXT_COLOR: Utility.HexColor = "#0F4844";
     private static readonly LINE_COLOR: Utility.HexColor = "#0F4844";
     private static readonly BOX_PADDING: number = 10;
-    private static ID_GENERATOR: number = 0;
+
     id: number;
     level: number = -1;
     canvasPos: Utility.Point = { x: 0, y: 0 };
+    canvasPosStr: Utility.Point = {x: 0, y: 0};
 
     constructor(value: number) {
         super(value);
-        this.id = DrawableItem.ID_GENERATOR++;
+        this.id = Item.ID_GENERATOR++;
     }
 
-    static resetId(): void {
-        DrawableItem.ID_GENERATOR--;
-    }
 
     drawLineToItem(ctx: CanvasRenderingContext2D, other: DrawableItem) {
         Utility.drawLine(ctx, this.canvasPos, other.canvasPos, DrawableItem.LINE_COLOR);
@@ -41,6 +39,25 @@ export default class DrawableItem extends Item {
             textWidth + 2 * DrawableItem.BOX_PADDING,
             textHeight + 2 * DrawableItem.BOX_PADDING
         );
+
+        ctx.fillStyle = DrawableItem.TEXT_COLOR;
+        if (transparency) {
+            ctx.fillStyle += ("00" + Math.floor(transparency * 255).toString(16)).slice(-2);
+        }
+        ctx.fillText(String(this.priority), cx, cy + textHeight / 2);
+
+    }
+
+    stringRender(ctx: CanvasRenderingContext2D, transparency?: number) {
+        let textWidth = ctx.measureText(String(this.priority)).width;
+        let textHeight = parseFloat(ctx.font.match(/\d+px/)![0]);
+
+        let cx: number = this.canvasPosStr.x;
+        let cy: number = this.canvasPosStr.y - textHeight / 2;
+
+        if (transparency) {
+            ctx.fillStyle += ("00" + Math.floor(transparency * 255).toString(16)).slice(-2);
+        }
 
         ctx.fillStyle = DrawableItem.TEXT_COLOR;
         if (transparency) {

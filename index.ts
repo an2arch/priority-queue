@@ -2,6 +2,7 @@ import FunctionsContainer from "./modules/FunctionsContainer.js";
 import QueueWidget from "./modules/QueueWidget.js";
 
 const canvas: HTMLCanvasElement = document.getElementById("canvas") as HTMLCanvasElement;
+const canvasInsideView = document.getElementById("canvasInsideView") as HTMLCanvasElement;
 
 const story: HTMLDivElement = document.getElementById("overflow") as HTMLDivElement;
 
@@ -13,8 +14,9 @@ const undoButton = document.getElementById("undo-button") as HTMLButtonElement;
 
 const sliderInput = document.getElementById("slider") as HTMLInputElement;
 const indicatorInput = document.getElementById("indicator") as HTMLInputElement;
+const currentQueue = document.getElementById("current-queue") as HTMLDivElement;
 
-let queueWidget = new QueueWidget(canvas);
+let queueWidget = new QueueWidget(canvas, canvasInsideView);
 let funcContainer = new FunctionsContainer(
     addButton,
     popButton,
