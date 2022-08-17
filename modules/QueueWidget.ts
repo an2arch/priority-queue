@@ -153,10 +153,11 @@ export default class QueueWidget {
 
         this.canvasInsideView.onwheel = (e: WheelEvent) => {
 
+            const SPEED = 2;
             let browserScale = window.devicePixelRatio;
             let offsetY: number = e.clientY;
             this.currMatrixInsideView.translateSelf(
-                offsetY / e.deltaY * browserScale,
+                offsetY / e.deltaY * browserScale * SPEED,
                 0
             );
         };

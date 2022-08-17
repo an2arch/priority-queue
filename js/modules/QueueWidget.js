@@ -85,9 +85,10 @@ export default class QueueWidget {
             }
         }, false);
         this.canvasInsideView.onwheel = (e) => {
+            const speed = 2;
             let browserScale = window.devicePixelRatio;
             let offsetY = e.clientY;
-            this.currMatrixInsideView.translateSelf(offsetY / e.deltaY * browserScale, 0);
+            this.currMatrixInsideView.translateSelf(offsetY / e.deltaY * browserScale * speed, 0);
         };
     }
     Enqueue(item) {
