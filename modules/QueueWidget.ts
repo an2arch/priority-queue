@@ -45,6 +45,7 @@ export default class QueueWidget {
 
     private currMatrix: DOMMatrix = new DOMMatrix();
     private currMatrixInsideView: DOMMatrix = new DOMMatrix();
+    private insideViewLength: number = 0;
 
     private scale: number = 1;
 
@@ -154,12 +155,21 @@ export default class QueueWidget {
         this.canvasInsideView.onwheel = (e: WheelEvent) => {
 
             const SPEED = 2;
+
             let browserScale = window.devicePixelRatio;
             let offsetY: number = e.clientY;
+            let step: number = offsetY / e.deltaY * browserScale * SPEED;
+
             this.currMatrixInsideView.translateSelf(
-                offsetY / e.deltaY * browserScale * SPEED,
+                -step,
                 0
             );
+
+            if(this.currMatrixInsideView.e > 0) this.currMatrixInsideView.e = 0;
+
+            console.log(-this.canvasInsideView.width);
+            console.log(-this.insideViewLength);
+            console.log(this.currMatrixInsideView);
         };
     }
 
@@ -222,7 +232,8 @@ export default class QueueWidget {
     updateItems(items: DrawableItem[]): DrawableItem[] {
         let levelCount = Math.floor(Math.log2(items.length));
         let newItems = [];
-        let step: number = 20;
+        let STEP: number = 20;
+        this.insideViewLength = 0;
 
         for (let i = 0; i < items.length; ++i) {
             let newItem: DrawableItem = new DrawableItem(items[i].priority);
@@ -238,9 +249,11 @@ export default class QueueWidget {
                     : this.ctx.canvas.width / 2;
 
             let yStr: number = this.canvasInsideView.height / 2;
-            let xStr: number = step;
+            let xStr: number = STEP;
+            this.insideViewLength += STEP;
 
-            step += this.ctxInsideView.measureText(newItem.priority.toString()).width + 20;
+
+            STEP += this.ctxInsideView.measureText(newItem.priority.toString()).width + 20;
 
             newItem.level = levelCurrent;
             newItem.canvasPos = {x, y};

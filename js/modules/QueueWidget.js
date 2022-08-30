@@ -26,6 +26,7 @@ export default class QueueWidget {
     constructor(canvas, canvasInsideView) {
         this.currMatrix = new DOMMatrix();
         this.currMatrixInsideView = new DOMMatrix();
+        this.insideViewLength = 0;
         this.scale = 1;
         this.history = [];
         this.queue = new DecQueue();
@@ -85,10 +86,16 @@ export default class QueueWidget {
             }
         }, false);
         this.canvasInsideView.onwheel = (e) => {
-            const speed = 2;
+            const SPEED = 2;
             let browserScale = window.devicePixelRatio;
             let offsetY = e.clientY;
-            this.currMatrixInsideView.translateSelf(offsetY / e.deltaY * browserScale * speed, 0);
+            let step = offsetY / e.deltaY * browserScale * SPEED;
+            this.currMatrixInsideView.translateSelf(-step, 0);
+            if (this.currMatrixInsideView.e > 0)
+                this.currMatrixInsideView.e = 0;
+            console.log(-this.canvasInsideView.width);
+            console.log(-this.insideViewLength);
+            console.log(this.currMatrixInsideView);
         };
     }
     Enqueue(item) {
@@ -144,7 +151,8 @@ export default class QueueWidget {
     updateItems(items) {
         let levelCount = Math.floor(Math.log2(items.length));
         let newItems = [];
-        let step = 20;
+        let STEP = 20;
+        this.insideViewLength = 0;
         for (let i = 0; i < items.length; ++i) {
             let newItem = new DrawableItem(items[i].priority);
             let levelCurrent = Math.floor(Math.log2(i + 1));
@@ -155,8 +163,9 @@ export default class QueueWidget {
                     Math.pow(-1, (i + 1) % 2) * QueueWidget.ITEM_SPACING_X * countChildren
                 : this.ctx.canvas.width / 2;
             let yStr = this.canvasInsideView.height / 2;
-            let xStr = step;
-            step += this.ctxInsideView.measureText(newItem.priority.toString()).width + 20;
+            let xStr = STEP;
+            this.insideViewLength += STEP;
+            STEP += this.ctxInsideView.measureText(newItem.priority.toString()).width + 20;
             newItem.level = levelCurrent;
             newItem.canvasPos = { x, y };
             newItem.canvasPosStr = { x: xStr, y: yStr };
